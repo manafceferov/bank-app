@@ -25,7 +25,8 @@ public class CardService {
 
     public CardService(CardRepository cardRepository,
                        AccountRepository accountRepository,
-                       CardMapper cardMapper) {
+                       CardMapper cardMapper
+    ) {
         this.cardRepository = cardRepository;
         this.accountRepository = accountRepository;
         this.cardMapper = cardMapper;
@@ -36,12 +37,10 @@ public class CardService {
                 .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
         if (!account.getUser().getId().equals(userId))
             throw new RuntimeException(Messages.FORBIDDEN.name());
-
         String cardNumber = CardUtil.generateCardNumber();
         while (cardRepository.existsByCardNumber(cardNumber)) {
             cardNumber = CardUtil.generateCardNumber();
         }
-
         Card card = new Card();
         card.setAccount(account);
         card.setCardNumber(cardNumber);
@@ -51,7 +50,6 @@ public class CardService {
         card.setExpiryDate(LocalDate.now().plusYears(3));
         card.setStatus(CardStatus.PENDING);
         cardRepository.save(card);
-
         return new ApiResponse<>(true, cardMapper.toResponse(card), Messages.CREATED.name());
     }
 
@@ -60,7 +58,6 @@ public class CardService {
                 .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
         if (!account.getUser().getId().equals(userId))
             throw new RuntimeException(Messages.FORBIDDEN.name());
-
         List<CardResponseDto> list = cardRepository
                 .findByAccountIdAndDeletedFalse(accountId)
                 .stream()

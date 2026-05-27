@@ -25,21 +25,22 @@ public class AccountService {
 
     public AccountService(AccountRepository accountRepository,
                           UserRepository userRepository,
-                          AccountMapper accountMapper) {
+                          AccountMapper accountMapper
+    ) {
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.accountMapper = accountMapper;
     }
 
-    public ApiResponse<AccountResponseDto> create(Long userId, AccountCreateDto dto) {
+    public ApiResponse<AccountResponseDto> create(Long userId,
+                                                  AccountCreateDto dto
+    ) {
         User user = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
-
         String iban = IbanUtil.generate();
         while (accountRepository.existsByIban(iban)) {
             iban = IbanUtil.generate();
         }
-
         Account account = new Account();
         account.setUser(user);
         account.setIban(iban);
@@ -48,7 +49,6 @@ public class AccountService {
         account.setBalance(BigDecimal.ZERO);
         account.setStatus(AccountStatus.ACTIVE);
         accountRepository.save(account);
-
         return new ApiResponse<>(true, accountMapper.toResponse(account), Messages.CREATED.name());
     }
 

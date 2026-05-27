@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.UUID;
 
 @Service
@@ -29,7 +30,8 @@ public class TransactionService {
     public TransactionService(TransactionRepository transactionRepository,
                               AccountRepository accountRepository,
                               TransactionMapper transactionMapper,
-                              CardRepository cardRepository) {
+                              CardRepository cardRepository
+    ) {
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
         this.transactionMapper = transactionMapper;
@@ -37,20 +39,11 @@ public class TransactionService {
     }
 
     @Transactional
-    public ApiResponse<TransactionResponseDto> transfer(Long userId, TransferRequestDto dto) {
-
-        System.out.println("=== TRANSFER DEBUG START ===");
-        System.out.println("Current UserId (from token): " + userId);
-        System.out.println("From Account ID: " + dto.getFromAccountId());
-        System.out.println("Amount: " + dto.getAmount());
-
+    public ApiResponse<TransactionResponseDto> transfer(Long userId,
+                                                        TransferRequestDto dto
+    ) {
         Account from = accountRepository.findByIdAndDeletedFalse(dto.getFromAccountId())
                 .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
-
-        System.out.println("Found Account ID: " + from.getId());
-        System.out.println("Account Owner UserId: " + from.getUser().getId());
-        System.out.println("Account Balance: " + from.getBalance());
-
         if (!from.getUser().getId().equals(userId)) {
             throw new RuntimeException(Messages.FORBIDDEN.name());
         }
@@ -60,12 +53,8 @@ public class TransactionService {
         if (from.getBalance().compareTo(dto.getAmount()) < 0) {
             throw new RuntimeException(Messages.INSUFFICIENT_BALANCE.name());
         }
-
-        System.out.println("All checks passed. Proceeding with transfer...");
-
         Account to;
         if (dto.getToCardNumber() != null && !dto.getToCardNumber().isEmpty()) {
-            // Kart nömrəsinə görə hesabı tap
             to = cardRepository.findByCardNumberAndDeletedFalse(dto.getToCardNumber())
                     .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()))
                     .getAccount();
@@ -73,13 +62,10 @@ public class TransactionService {
             to = accountRepository.findByIbanAndDeletedFalse(dto.getToIban())
                     .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
         }
-
         from.setBalance(from.getBalance().subtract(dto.getAmount()));
         to.setBalance(to.getBalance().add(dto.getAmount()));
-
         accountRepository.save(from);
         accountRepository.save(to);
-
         Transaction transaction = new Transaction();
         transaction.setFromAccount(from);
         transaction.setToAccount(to);
@@ -88,19 +74,18 @@ public class TransactionService {
         transaction.setTransactionType(TransactionType.TRANSFER);
         transaction.setDescription(dto.getDescription());
         transaction.setReferenceNumber(UUID.randomUUID().toString());
-
         transactionRepository.save(transaction);
-
-        System.out.println("=== TRANSFER SUCCESS ===");
         return new ApiResponse<>(true, transactionMapper.toResponse(transaction), Messages.SUCCESS.name());
     }
 
-    public ApiResponse<Page<TransactionResponseDto>> getHistory(Long accountId, Long userId, Pageable pageable) {
+    public ApiResponse<Page<TransactionResponseDto>> getHistory(Long accountId,
+                                                                Long userId,
+                                                                Pageable pageable
+    ) {
         Account account = accountRepository.findByIdAndDeletedFalse(accountId)
                 .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
         if (!account.getUser().getId().equals(userId))
             throw new RuntimeException(Messages.FORBIDDEN.name());
-
         Page<TransactionResponseDto> page = transactionRepository
                 .findAllByAccountId(accountId, pageable)
                 .map(transactionMapper::toResponse);

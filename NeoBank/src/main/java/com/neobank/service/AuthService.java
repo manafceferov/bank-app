@@ -23,7 +23,8 @@ public class AuthService {
     public AuthService(UserRepository userRepository,
                        UserMapper userMapper,
                        PasswordEncoder passwordEncoder,
-                       JwtUtil jwtUtil) {
+                       JwtUtil jwtUtil
+    ) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
@@ -35,32 +36,26 @@ public class AuthService {
             throw new RuntimeException(Messages.ALREADY_EXISTS.name());
         if (dto.getFinCode() != null && userRepository.existsByFinCode(dto.getFinCode()))
             throw new RuntimeException(Messages.ALREADY_EXISTS.name());
-
         User user = new User();
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
         user.setEmail(dto.getEmail());
-        user.setUserPassword(passwordEncoder.encode(dto.getPassword())); // ← düzəliş
+        user.setUserPassword(passwordEncoder.encode(dto.getPassword()));
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setFinCode(dto.getFinCode());
         userRepository.save(user);
-
         return new ApiResponse<>(true, Messages.CREATED.name());
     }
 
     public ApiResponse<LoginResponseDto> login(LoginRequestDto dto) {
         User user = userRepository.findByEmailAndDeletedFalse(dto.getEmail())
                 .orElseThrow(() -> new RuntimeException(Messages.INVALID_CREDENTIALS.name()));
-
-        if (!passwordEncoder.matches(dto.getPassword(), user.getUserPassword())) // ← düzəliş
+        if (!passwordEncoder.matches(dto.getPassword(), user.getUserPassword()))
             throw new RuntimeException(Messages.INVALID_CREDENTIALS.name());
-
         if (!user.getActive())
             throw new RuntimeException(Messages.FORBIDDEN.name());
-
         LoginResponseDto response = userMapper.toLoginResponse(user);
         response.setToken(jwtUtil.generateToken(user.getEmail(), user.getRole().name()));
-
         return new ApiResponse<>(true, response, Messages.SUCCESS.name());
     }
 }

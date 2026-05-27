@@ -35,7 +35,8 @@ public class MvcController {
                          CardService cardService,
                          DepositService depositService,
                          CreditService creditService,
-                         TransactionService transactionService) {
+                         TransactionService transactionService
+    ) {
         this.authService = authService;
         this.accountService = accountService;
         this.cardService = cardService;
@@ -44,14 +45,12 @@ public class MvcController {
         this.transactionService = transactionService;
     }
 
-    // ===================== HOME =====================
 
     @GetMapping("/")
     public String home() {
         return "home";
     }
 
-    // ===================== AUTH =====================
 
     @GetMapping("/login")
     public String loginPage() {
@@ -62,30 +61,22 @@ public class MvcController {
     public String login(@RequestParam String email,
                         @RequestParam String password,
                         HttpSession session,
-                        Model model) {
-
+                        Model model
+    ) {
         try {
-
             LoginRequestDto dto = new LoginRequestDto();
             dto.setEmail(email);
             dto.setPassword(password);
 
             LoginResponseDto response = authService.login(dto).getData();
-
-            // SESSION
             session.setAttribute("userId", response.getUserId());
             session.setAttribute("email", response.getEmail());
             session.setAttribute("role", response.getRole());
             session.setAttribute("token", response.getToken());
-
-            // FULL NAME
             session.setAttribute("firstName", response.getFirstName());
             session.setAttribute("lastName", response.getLastName());
-
             return "redirect:/dashboard";
-
         } catch (Exception e) {
-
             model.addAttribute("error", "Email və ya şifrə yanlışdır");
             return "auth/login";
         }
@@ -103,7 +94,8 @@ public class MvcController {
                            @RequestParam String password,
                            @RequestParam(required = false) String phoneNumber,
                            @RequestParam(required = false) String finCode,
-                           Model model) {
+                           Model model
+    ) {
         try {
             var dto = new com.neobank.dto.auth.RegisterRequestDto();
             dto.setFirstName(firstName);
@@ -126,30 +118,28 @@ public class MvcController {
         return "redirect:/";
     }
 
-    // ===================== DASHBOARD =====================
-
     @GetMapping("/dashboard")
-    public String dashboard(HttpSession session, Model model) {
+    public String dashboard(HttpSession session,
+                            Model model
+    ) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
         if (auth == null || !auth.isAuthenticated()) {
             return "redirect:/login";
         }
-
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return "redirect:/login";
         }
-
         model.addAttribute("accounts", accountService.getMyAccounts(userId).getData());
         model.addAttribute("credits", creditService.getMyCredits(userId).getData());
         return "dashboard";
     }
 
-    // ===================== ACCOUNTS =====================
 
     @GetMapping("/web/accounts")
-    public String accounts(HttpSession session, Model model) {
+    public String accounts(HttpSession session,
+                           Model model
+    ) {
         if (session.getAttribute("userId") == null) return "redirect:/login";
         Long userId = (Long) session.getAttribute("userId");
         model.addAttribute("accounts", accountService.getMyAccounts(userId).getData());
@@ -166,7 +156,8 @@ public class MvcController {
     public String createAccount(@RequestParam String accountType,
                                 @RequestParam(defaultValue = "AZN") String currency,
                                 HttpSession session,
-                                Model model) {
+                                Model model
+    ) {
         if (session.getAttribute("userId") == null) return "redirect:/login";
         try {
             Long userId = (Long) session.getAttribute("userId");
@@ -184,7 +175,8 @@ public class MvcController {
     @GetMapping("/web/accounts/{id}")
     public String accountDetail(@PathVariable Long id,
                                 HttpSession session,
-                                Model model) {
+                                Model model
+    ) {
         if (session.getAttribute("userId") == null) return "redirect:/login";
         Long userId = (Long) session.getAttribute("userId");
         model.addAttribute("account", accountService.getById(id, userId).getData());
@@ -194,12 +186,11 @@ public class MvcController {
         return "account/detail";
     }
 
-    // ===================== CARDS =====================
-
     @GetMapping("/web/cards/request/{accountId}")
     public String requestCardPage(@PathVariable Long accountId,
                                   HttpSession session,
-                                  Model model) {
+                                  Model model
+    ) {
         if (session.getAttribute("userId") == null) return "redirect:/login";
         model.addAttribute("accountId", accountId);
         return "card/request";
@@ -209,7 +200,8 @@ public class MvcController {
     public String requestCard(@RequestParam Long accountId,
                               @RequestParam String cardType,
                               HttpSession session,
-                              Model model) {
+                              Model model
+    ) {
         if (session.getAttribute("userId") == null) return "redirect:/login";
         try {
             Long userId = (Long) session.getAttribute("userId");
@@ -228,17 +220,18 @@ public class MvcController {
     @PostMapping("/web/cards/{cardId}/block")
     public String blockCard(@PathVariable Long cardId,
                             @RequestParam Long accountId,
-                            HttpSession session) {
+                            HttpSession session
+    ) {
         if (session.getAttribute("userId") == null) return "redirect:/login";
         Long userId = (Long) session.getAttribute("userId");
         cardService.blockCard(cardId, userId);
         return "redirect:/web/accounts/" + accountId;
     }
 
-    // ===================== TRANSACTIONS =====================
-
     @GetMapping("/web/transactions/transfer")
-    public String transferPage(HttpSession session, Model model) {
+    public String transferPage(HttpSession session,
+                               Model model
+    ) {
         if (session.getAttribute("userId") == null) return "redirect:/login";
         Long userId = (Long) session.getAttribute("userId");
         model.addAttribute("accounts", accountService.getMyAccounts(userId).getData());
@@ -252,7 +245,8 @@ public class MvcController {
                            @RequestParam java.math.BigDecimal amount,
                            @RequestParam(required = false) String description,
                            HttpSession session,
-                           Model model) {
+                           Model model
+    ) {
         if (session.getAttribute("userId") == null) return "redirect:/login";
         try {
             Long userId = (Long) session.getAttribute("userId");
@@ -272,12 +266,11 @@ public class MvcController {
         }
     }
 
-    // ===================== DEPOSITS =====================
-
     @GetMapping("/web/deposits/new/{accountId}")
     public String newDepositPage(@PathVariable Long accountId,
                                  HttpSession session,
-                                 Model model) {
+                                 Model model
+    ) {
         if (session.getAttribute("userId") == null) return "redirect:/login";
         Long userId = (Long) session.getAttribute("userId");
         model.addAttribute("account", accountService.getById(accountId, userId).getData());
@@ -289,7 +282,8 @@ public class MvcController {
                                 @RequestParam java.math.BigDecimal amount,
                                 @RequestParam Integer durationMonths,
                                 HttpSession session,
-                                Model model) {
+                                Model model
+    ) {
         if (session.getAttribute("userId") == null) return "redirect:/login";
         try {
             Long userId = (Long) session.getAttribute("userId");
@@ -310,17 +304,18 @@ public class MvcController {
     @PostMapping("/web/deposits/{depositId}/close")
     public String closeDeposit(@PathVariable Long depositId,
                                @RequestParam Long accountId,
-                               HttpSession session) {
+                               HttpSession session
+    ) {
         if (session.getAttribute("userId") == null) return "redirect:/login";
         Long userId = (Long) session.getAttribute("userId");
         depositService.close(depositId, userId);
         return "redirect:/web/accounts/" + accountId;
     }
 
-    // ===================== CREDITS =====================
-
     @GetMapping("/web/credits")
-    public String credits(HttpSession session, Model model) {
+    public String credits(HttpSession session,
+                          Model model
+    ) {
         if (session.getAttribute("userId") == null) return "redirect:/login";
         Long userId = (Long) session.getAttribute("userId");
         model.addAttribute("credits", creditService.getMyCredits(userId).getData());
@@ -328,7 +323,9 @@ public class MvcController {
     }
 
     @GetMapping("/web/credits/apply")
-    public String applyCreditPage(HttpSession session, Model model) {
+    public String applyCreditPage(HttpSession session,
+                                  Model model
+    ) {
         if (session.getAttribute("userId") == null) return "redirect:/login";
         Long userId = (Long) session.getAttribute("userId");
         model.addAttribute("accounts", accountService.getMyAccounts(userId).getData());
@@ -340,7 +337,8 @@ public class MvcController {
                               @RequestParam java.math.BigDecimal amount,
                               @RequestParam Integer durationMonths,
                               HttpSession session,
-                              Model model) {
+                              Model model
+    ) {
         if (session.getAttribute("userId") == null) return "redirect:/login";
         try {
             Long userId = (Long) session.getAttribute("userId");

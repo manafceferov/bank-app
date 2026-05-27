@@ -26,54 +26,33 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // ================= REST API =================
-    // JWT + STATELESS
-
     @Bean
     @Order(1)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
-
         return http
                 .securityMatcher("/api/**")
-
                 .csrf(AbstractHttpConfigurer::disable)
-
                 .authorizeHttpRequests(auth -> auth
-
-                        // PUBLIC API
                         .requestMatchers(
                                 "/api/auth/**"
                         ).permitAll()
-
-                        // ADMIN
                         .requestMatchers("/api/credits/*/approve").hasRole("ADMIN")
                         .requestMatchers("/api/accounts/*/block").hasRole("ADMIN")
-
-                        // EVERYTHING ELSE
                         .anyRequest().authenticated()
                 )
-
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-
                 .build();
     }
-
-    // ================= MVC =================
-    // SESSION + THYMELEAF
 
     @Bean
     @Order(2)
     public SecurityFilterChain webFilterChain(HttpSecurity http) throws Exception {
-
         return http
                 .securityMatcher("/**")
-
                 .csrf(AbstractHttpConfigurer::disable)
-
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
@@ -82,29 +61,22 @@ public class SecurityConfig {
                                 "/logout",
                                 "/error"
                         ).permitAll()
-
                         .requestMatchers(
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
                                 "/webjars/**"
                         ).permitAll()
-
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
-
                         .anyRequest().authenticated()
                 )
-
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
-
-                // ƏN VACİB HİSSƏ
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-
                 .build();
     }
 }

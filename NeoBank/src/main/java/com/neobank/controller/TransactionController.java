@@ -27,14 +27,11 @@ public class TransactionController {
     }
 
     @GetMapping("/account/{accountId}")
-    public ApiResponse<Page<TransactionResponseDto>> getHistory(
-            @PathVariable Long accountId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-
-        // Sort problemi aradan qaldırılır
+    public ApiResponse<Page<TransactionResponseDto>> getHistory(@PathVariable Long accountId,
+                                                                @RequestParam(defaultValue = "0") int page,
+                                                                @RequestParam(defaultValue = "10") int size
+    ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-
         return transactionService.getHistory(accountId, SecurityUtil.getCurrentUserId(), pageable);
     }
 }

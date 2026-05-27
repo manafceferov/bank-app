@@ -9,22 +9,29 @@
 <div class="container">
     <div class="page-title">Hesab Detalları</div>
 
-    <!-- Hesab Info -->
     <div class="grid-2" style="margin-bottom: 1.5rem;">
         <div class="card">
             <div class="card-title">Hesab Məlumatları</div>
             <table>
-                <tr><td style="color:var(--text-secondary)">IBAN</td>
-                    <td th:text="${account.iban}"></td></tr>
-                <tr><td style="color:var(--text-secondary)">Növ</td>
-                    <td th:text="${account.accountType}"></td></tr>
-                <tr><td style="color:var(--text-secondary)">Balans</td>
+                <tr>
+                    <td style="color:var(--text-secondary)">IBAN</td>
+                    <td th:text="${account.iban}"></td>
+                </tr>
+                <tr>
+                    <td style="color:var(--text-secondary)">Növ</td>
+                    <td th:text="${account.accountType}"></td>
+                </tr>
+                <tr>
+                    <td style="color:var(--text-secondary)">Balans</td>
                     <td style="color:var(--accent-green); font-weight:700;"
-                        th:text="${account.balance} + ' ' + ${account.currency}"></td></tr>
-                <tr><td style="color:var(--text-secondary)">Status</td>
+                        th:text="${account.balance} + ' ' + ${account.currency}"></td>
+                </tr>
+                <tr>
+                    <td style="color:var(--text-secondary)">Status</td>
                     <td><span class="badge"
                               th:classappend="${account.status == 'ACTIVE'} ? 'badge-green' : 'badge-red'"
-                              th:text="${account.status}"></span></td></tr>
+                              th:text="${account.status}"></span></td>
+                </tr>
             </table>
             <div style="display:flex; gap:0.5rem; margin-top:1rem;">
                 <a th:href="@{/web/transactions/transfer}" class="btn btn-primary">Transfer</a>
@@ -33,10 +40,10 @@
             </div>
         </div>
 
-        <!-- Kartlar -->
         <div class="card">
             <div class="card-title">Kartlar</div>
-            <div th:each="card : ${cards}" style="margin-bottom: 1rem; padding: 1rem; background: var(--bg-hover); border-radius: 8px;">
+            <div th:each="card : ${cards}"
+                 style="margin-bottom: 1rem; padding: 1rem; background: var(--bg-hover); border-radius: 8px;">
                 <div style="font-family: monospace; font-size: 1.1rem; margin-bottom: 0.5rem;"
                      th:text="${card.cardNumber}"></div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -65,7 +72,6 @@
         </div>
     </div>
 
-    <!-- Əmanətlər -->
     <div class="card" style="margin-bottom: 1.5rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
             <div class="card-title">Əmanətlər</div>
@@ -74,8 +80,13 @@
         <table>
             <thead>
             <tr>
-                <th>Məbləğ</th><th>Faiz</th><th>Müddət</th>
-                <th>Gözlənilən gəlir</th><th>Bitmə tarixi</th><th>Status</th><th></th>
+                <th>Məbləğ</th>
+                <th>Faiz</th>
+                <th>Müddət</th>
+                <th>Gözlənilən gəlir</th>
+                <th>Bitmə tarixi</th>
+                <th>Status</th>
+                <th></th>
             </tr>
             </thead>
             <tbody>
@@ -109,14 +120,17 @@
         </table>
     </div>
 
-    <!-- Əməliyyatlar -->
     <div class="card">
         <div class="card-title">Son Əməliyyatlar</div>
         <table>
             <thead>
             <tr>
-                <th>Ref. Nömrə</th><th>Növ</th><th>Məbləğ</th>
-                <th>Valyuta</th><th>Açıqlama</th><th>Tarix</th>
+                <th>Ref. Nömrə</th>
+                <th>Növ</th>
+                <th>Məbləğ</th>
+                <th>Valyuta</th>
+                <th>Açıqlama</th>
+                <th>Tarix</th>
             </tr>
             </thead>
             <tbody>

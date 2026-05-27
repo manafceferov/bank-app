@@ -15,6 +15,7 @@ import com.neobank.repository.CreditRepository;
 import com.neobank.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -35,7 +36,8 @@ public class CreditService {
     public CreditService(CreditRepository creditRepository,
                          AccountRepository accountRepository,
                          UserRepository userRepository,
-                         CreditMapper creditMapper) {
+                         CreditMapper creditMapper
+    ) {
         this.creditRepository = creditRepository;
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
@@ -64,7 +66,6 @@ public class CreditService {
                 .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
         if (!account.getUser().getId().equals(userId))
             throw new RuntimeException(Messages.FORBIDDEN.name());
-
         int n = dto.getDurationMonths();
         BigDecimal monthlyRate = ANNUAL_RATE
                 .divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP)
@@ -74,7 +75,6 @@ public class CreditService {
                 .multiply(monthlyRate)
                 .multiply(pow)
                 .divide(pow.subtract(BigDecimal.ONE), 2, RoundingMode.HALF_UP);
-
         Credit credit = new Credit();
         credit.setUser(user);
         credit.setAccount(account);
@@ -85,7 +85,6 @@ public class CreditService {
         credit.setStartDate(LocalDate.now());
         credit.setEndDate(LocalDate.now().plusMonths(n));
         credit.setStatus(CreditStatus.PENDING);
-
         List<CreditPayment> schedule = new ArrayList<>();
         for (int i = 1; i <= n; i++) {
             CreditPayment payment = new CreditPayment();
@@ -97,7 +96,6 @@ public class CreditService {
         }
         credit.setPaymentSchedule(schedule);
         creditRepository.save(credit);
-
         return new ApiResponse<>(true, creditMapper.toResponse(credit), Messages.CREATED.name());
     }
 
@@ -106,7 +104,6 @@ public class CreditService {
         Credit credit = creditRepository.findByIdAndDeletedFalse(creditId)
                 .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
         credit.setStatus(CreditStatus.APPROVED);
-
         Account account = credit.getAccount();
         account.setBalance(account.getBalance().add(credit.getAmount()));
         accountRepository.save(account);
