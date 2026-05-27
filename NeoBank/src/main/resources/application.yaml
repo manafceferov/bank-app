@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: NeoBank
+
+  datasource:
+    url: jdbc:postgresql://localhost:5433/bank_db
+    username: quizuser
+    password: quizpassword
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: false
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+  # Swagger
+  swagger-ui:
+    path: /swagger-ui.html
+
+server:
+  port: 3333
+
+jwt:
+  secret: neobankSecretKey2024neobankSecretKey2024neobankSecretKey2024
+  expiration: 86400000
+
+logging:
+  level:
+    root: INFO
+    org.hibernate.orm.connections.pooling: OFF
+    org.hibernate.orm.deprecation: OFF
+    org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration: OFF

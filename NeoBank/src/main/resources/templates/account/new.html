@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/header :: head('Yeni Hesab')}"/>
+</head>
+<body>
+<th:block th:replace="~{fragments/header :: navbar}"/>
+
+<div class="container">
+    <div style="max-width: 480px; margin: 0 auto;">
+        <div class="page-title">Yeni Hesab Aç</div>
+        <div class="card">
+            <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+            <form method="post" th:action="@{/web/accounts/new}">
+                <div class="form-group">
+                    <label>Hesab növü</label>
+                    <select name="accountType">
+                        <option value="CURRENT">Cari hesab</option>
+                        <option value="SAVINGS">Əmanət hesabı</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Valyuta</label>
+                    <select name="currency">
+                        <option value="AZN">AZN — Azərbaycan Manatı</option>
+                        <option value="USD">USD — ABŞ Dolları</option>
+                        <option value="EUR">EUR — Avro</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem;">
+                    Hesab aç
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/footer :: footer}"/>
+</body>
+</html>

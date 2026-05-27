@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/header :: head('Dashboard')}"/>
+</head>
+<body>
+<th:block th:replace="~{fragments/header :: navbar}"/>
+
+<div class="container">
+    <div class="page-title">Dashboard</div>
+
+    <!-- Stat Cards -->
+    <div class="grid-4" style="margin-bottom: 2rem;">
+        <div class="stat-card">
+            <div class="stat-label">Hesablar</div>
+            <div class="stat-value purple" th:text="${accounts != null ? accounts.size() : 0}">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Ümumi Balans</div>
+            <div class="stat-value green">
+                <span th:text="${#aggregates.sum(accounts.![balance])}">0</span> AZN
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Kreditlər</div>
+            <div class="stat-value" th:text="${credits != null ? credits.size() : 0}">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Aktiv Kreditlər</div>
+            <div class="stat-value purple"
+                 th:text="${credits != null ? credits.?[status == 'ACTIVE'].size() : 0}">0</div>
+        </div>
+    </div>
+
+    <!-- Hesablar -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div class="card-title">Hesablarım</div>
+            <a th:href="@{/web/accounts/new}" class="btn btn-primary">+ Yeni Hesab</a>
+        </div>
+        <table>
+            <thead>
+            <tr>
+                <th>IBAN</th>
+                <th>Növ</th>
+                <th>Balans</th>
+                <th>Valyuta</th>
+                <th>Status</th>
+                <th>Əməliyyat</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="account : ${accounts}">
+                <td th:text="${account.iban}"></td>
+                <td th:text="${account.accountType}"></td>
+                <td th:text="${account.balance}"></td>
+                <td th:text="${account.currency}"></td>
+                <td>
+                        <span class="badge"
+                              th:classappend="${account.status == 'ACTIVE'} ? 'badge-green' : 'badge-red'"
+                              th:text="${account.status}">
+                        </span>
+                </td>
+                <td>
+                    <a th:href="@{/web/accounts/{id}(id=${account.id})}"
+                       class="btn btn-outline" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;">
+                        Ətraflı
+                    </a>
+                </td>
+            </tr>
+            <tr th:if="${accounts == null or accounts.isEmpty()}">
+                <td colspan="6" style="text-align: center; color: var(--text-secondary);">
+                    Hesab yoxdur
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Kreditlər -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div class="card-title">Kreditlərim</div>
+            <a th:href="@{/web/credits/apply}" class="btn btn-outline">+ Kredit müraciəti</a>
+        </div>
+        <table>
+            <thead>
+            <tr>
+                <th>Məbləğ</th>
+                <th>Faiz</th>
+                <th>Müddət</th>
+                <th>Aylıq ödəniş</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="credit : ${credits}">
+                <td th:text="${credit.amount} + ' AZN'"></td>
+                <td th:text="${credit.interestRate} + '%'"></td>
+                <td th:text="${credit.durationMonths} + ' ay'"></td>
+                <td th:text="${credit.monthlyPayment} + ' AZN'"></td>
+                <td>
+                        <span class="badge"
+                              th:classappend="${credit.status == 'ACTIVE'} ? 'badge-green' :
+                                             (${credit.status == 'PENDING'} ? 'badge-yellow' : 'badge-red')"
+                              th:text="${credit.status}">
+                        </span>
+                </td>
+            </tr>
+            <tr th:if="${credits == null or credits.isEmpty()}">
+                <td colspan="5" style="text-align: center; color: var(--text-secondary);">
+                    Kredit yoxdur
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/footer :: footer}"/>
+</body>
+</html>

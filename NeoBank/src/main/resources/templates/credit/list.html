@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/header :: head('Kreditlər')}"/>
+</head>
+<body>
+<th:block th:replace="~{fragments/header :: navbar}"/>
+
+<div class="container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <div class="page-title">Kreditlərim</div>
+        <a th:href="@{/web/credits/apply}" class="btn btn-primary">+ Müraciət et</a>
+    </div>
+
+    <div class="card">
+        <table>
+            <thead>
+            <tr>
+                <th>Məbləğ</th><th>Faiz</th><th>Müddət</th>
+                <th>Aylıq ödəniş</th><th>Başlama</th><th>Bitmə</th><th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="credit : ${credits}">
+                <td style="font-weight:600;" th:text="${credit.amount} + ' AZN'"></td>
+                <td th:text="${credit.interestRate} + '%'"></td>
+                <td th:text="${credit.durationMonths} + ' ay'"></td>
+                <td style="color:var(--accent-yellow);"
+                    th:text="${credit.monthlyPayment} + ' AZN'"></td>
+                <td th:text="${credit.startDate}"></td>
+                <td th:text="${credit.endDate}"></td>
+                <td>
+                        <span class="badge"
+                              th:classappend="${credit.status == 'ACTIVE'} ? 'badge-green' :
+                                             (${credit.status == 'PENDING'} ? 'badge-yellow' :
+                                             (${credit.status == 'APPROVED'} ? 'badge-purple' : 'badge-red'))"
+                              th:text="${credit.status}">
+                        </span>
+                </td>
+            </tr>
+            <tr th:if="${credits == null or credits.isEmpty()}">
+                <td colspan="7" style="text-align:center; color:var(--text-secondary); padding:2rem;">
+                    Kredit yoxdur
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/footer :: footer}"/>
+</body>
+</html>

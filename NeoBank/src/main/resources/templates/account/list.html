@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/header :: head('Hesablar')}"/>
+</head>
+<body>
+<th:block th:replace="~{fragments/header :: navbar}"/>
+
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div class="page-title">Hesablarım</div>
+        <a th:href="@{/web/accounts/new}" class="btn btn-primary">+ Yeni Hesab</a>
+    </div>
+
+    <div class="grid-3">
+        <div th:each="account : ${accounts}" class="card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div>
+                    <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.3rem;"
+                         th:text="${account.accountType}"></div>
+                    <div style="font-size: 0.85rem; font-family: monospace;" th:text="${account.iban}"></div>
+                </div>
+                <span class="badge"
+                      th:classappend="${account.status == 'ACTIVE'} ? 'badge-green' : 'badge-red'"
+                      th:text="${account.status}">
+                </span>
+            </div>
+            <div style="font-size: 2rem; font-weight: 700; color: var(--accent-green); margin-bottom: 1rem;">
+                <span th:text="${account.balance}">0</span>
+                <span style="font-size: 1rem;" th:text="${account.currency}">AZN</span>
+            </div>
+            <a th:href="@{/web/accounts/{id}(id=${account.id})}"
+               class="btn btn-outline" style="width: 100%; text-align: center;">
+                Ətraflı bax
+            </a>
+        </div>
+
+        <div th:if="${accounts == null or accounts.isEmpty()}"
+             style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 3rem;">
+            Hesab yoxdur
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/footer :: footer}"/>
+</body>
+</html>

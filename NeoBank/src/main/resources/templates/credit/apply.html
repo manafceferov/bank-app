@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/header :: head('Kredit Müraciəti')}"/>
+</head>
+<body>
+<th:block th:replace="~{fragments/header :: navbar}"/>
+
+<div class="container">
+    <div style="max-width: 480px; margin: 0 auto;">
+        <div class="page-title">Kredit Müraciəti</div>
+        <div class="card">
+            <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+            <form method="post" th:action="@{/web/credits/apply}">
+                <div class="form-group">
+                    <label>Hesab</label>
+                    <select name="accountId">
+                        <option th:each="acc : ${accounts}"
+                                th:value="${acc.id}"
+                                th:text="${acc.iban} + ' — ' + ${acc.balance} + ' AZN'">
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Kredit məbləği (AZN)</label>
+                    <input type="number" name="amount" step="0.01" min="100" placeholder="1000.00" required/>
+                </div>
+                <div class="form-group">
+                    <label>Müddət</label>
+                    <select name="durationMonths">
+                        <option value="6">6 ay</option>
+                        <option value="12" selected>12 ay</option>
+                        <option value="24">24 ay</option>
+                        <option value="36">36 ay</option>
+                        <option value="60">60 ay</option>
+                    </select>
+                </div>
+                <div style="background:var(--bg-hover); border-radius:8px; padding:1rem; margin-bottom:1.2rem; font-size:0.85rem; color:var(--text-secondary);">
+                    💡 İllik faiz dərəcəsi: <strong style="color:var(--accent-yellow)">12%</strong>.
+                    Müraciət admin tərəfindən təsdiq ediləcək.
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; padding:0.85rem;">
+                    Müraciət et
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/footer :: footer}"/>
+</body>
+</html>

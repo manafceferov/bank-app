@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <th:block th:replace="~{fragments/header :: head('Ana Səhifə')}"/>
+</head>
+<body>
+<th:block th:replace="~{fragments/header :: navbar}"/>
+
+<div class="container" style="padding-top: 4rem; text-align: center;">
+    <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem;">
+        Xoş gəlmisiniz <span style="color: var(--accent)">Neo</span><span style="color: var(--accent-green)">Bank</span>-a
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2rem;">
+        Müasir, sürətli və təhlükəsiz bank xidmətləri
+    </p>
+    <div style="display: flex; gap: 1rem; justify-content: center;">
+        <a th:href="@{/register}" class="btn btn-primary" sec:authorize="!isAuthenticated()">
+            Qeydiyyat
+        </a>
+        <a th:href="@{/login}" class="btn btn-outline" sec:authorize="!isAuthenticated()">
+            Giriş
+        </a>
+        <a th:href="@{/dashboard}" class="btn btn-primary" sec:authorize="isAuthenticated()">
+            Dashboard-a keç
+        </a>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/footer :: footer}"/>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/header :: head('Yeni Əmanət')}"/>
+</head>
+<body>
+<th:block th:replace="~{fragments/header :: navbar}"/>
+
+<div class="container">
+    <div style="max-width: 480px; margin: 0 auto;">
+        <div class="page-title">Əmanət Aç</div>
+        <div class="card" style="margin-bottom:1rem;">
+            <div style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:0.3rem;">Hesab</div>
+            <div th:text="${account.iban}" style="font-family:monospace;"></div>
+            <div style="color:var(--accent-green); font-weight:700; margin-top:0.3rem;"
+                 th:text="${account.balance} + ' ' + ${account.currency}"></div>
+        </div>
+        <div class="card">
+            <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+            <form method="post" th:action="@{/web/deposits/new}">
+                <input type="hidden" name="accountId" th:value="${account.id}"/>
+                <div class="form-group">
+                    <label>Məbləğ (AZN)</label>
+                    <input type="number" name="amount" step="0.01" min="100" placeholder="500.00" required/>
+                </div>
+                <div class="form-group">
+                    <label>Müddət</label>
+                    <select name="durationMonths">
+                        <option value="3">3 ay — %3 gəlir</option>
+                        <option value="6">6 ay — %6 gəlir</option>
+                        <option value="12" selected>12 ay — %12 gəlir</option>
+                        <option value="24">24 ay — %24 gəlir</option>
+                    </select>
+                </div>
+                <div style="background:var(--bg-hover); border-radius:8px; padding:1rem; margin-bottom:1.2rem; font-size:0.85rem; color:var(--text-secondary);">
+                    💡 İllik faiz dərəcəsi: <strong style="color:var(--accent-green)">12%</strong>.
+                    Əmanət bağlandıqda ana məbləğ + faiz hesabınıza köçürülür.
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; padding:0.85rem;">
+                    Əmanət aç
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/footer :: footer}"/>
+</body>
+</html>

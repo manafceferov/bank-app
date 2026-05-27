@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/header :: head('Kart Sifarişi')}"/>
+</head>
+<body>
+<th:block th:replace="~{fragments/header :: navbar}"/>
+
+<div class="container">
+    <div style="max-width: 480px; margin: 0 auto;">
+        <div class="page-title">Kart Sifariş Et</div>
+        <div class="card">
+            <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+            <form method="post" th:action="@{/web/cards/request}">
+                <input type="hidden" name="accountId" th:value="${accountId}"/>
+                <div class="form-group">
+                    <label>Kart növü</label>
+                    <select name="cardType">
+                        <option value="VIRTUAL">Virtual kart</option>
+                        <option value="PHYSICAL">Fiziki kart</option>
+                    </select>
+                </div>
+                <div style="background:var(--bg-hover); border-radius:8px; padding:1rem; margin-bottom:1.2rem; font-size:0.85rem; color:var(--text-secondary);">
+                    💳 Virtual kart dərhal aktivləşir. Fiziki kart 3-5 iş günü ərzində çatdırılır.
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; padding:0.85rem;">
+                    Sifariş et
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/footer :: footer}"/>
+</body>
+</html>

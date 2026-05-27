@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/header :: head('Hesab Detalları')}"/>
+</head>
+<body>
+<th:block th:replace="~{fragments/header :: navbar}"/>
+
+<div class="container">
+    <div class="page-title">Hesab Detalları</div>
+
+    <!-- Hesab Info -->
+    <div class="grid-2" style="margin-bottom: 1.5rem;">
+        <div class="card">
+            <div class="card-title">Hesab Məlumatları</div>
+            <table>
+                <tr><td style="color:var(--text-secondary)">IBAN</td>
+                    <td th:text="${account.iban}"></td></tr>
+                <tr><td style="color:var(--text-secondary)">Növ</td>
+                    <td th:text="${account.accountType}"></td></tr>
+                <tr><td style="color:var(--text-secondary)">Balans</td>
+                    <td style="color:var(--accent-green); font-weight:700;"
+                        th:text="${account.balance} + ' ' + ${account.currency}"></td></tr>
+                <tr><td style="color:var(--text-secondary)">Status</td>
+                    <td><span class="badge"
+                              th:classappend="${account.status == 'ACTIVE'} ? 'badge-green' : 'badge-red'"
+                              th:text="${account.status}"></span></td></tr>
+            </table>
+            <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+                <a th:href="@{/web/transactions/transfer}" class="btn btn-primary">Transfer</a>
+                <a th:href="@{/web/deposits/new/{id}(id=${account.id})}" class="btn btn-outline">Əmanət</a>
+                <a th:href="@{/web/cards/request/{id}(id=${account.id})}" class="btn btn-success">Kart sifariş</a>
+            </div>
+        </div>
+
+        <!-- Kartlar -->
+        <div class="card">
+            <div class="card-title">Kartlar</div>
+            <div th:each="card : ${cards}" style="margin-bottom: 1rem; padding: 1rem; background: var(--bg-hover); border-radius: 8px;">
+                <div style="font-family: monospace; font-size: 1.1rem; margin-bottom: 0.5rem;"
+                     th:text="${card.cardNumber}"></div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <span style="color:var(--text-secondary); font-size:0.8rem;"
+                              th:text="${card.cardType}"></span>
+                        <span class="badge" style="margin-left:0.5rem;"
+                              th:classappend="${card.status == 'ACTIVE'} ? 'badge-green' :
+                                             (${card.status == 'PENDING'} ? 'badge-yellow' : 'badge-red')"
+                              th:text="${card.status}"></span>
+                    </div>
+                    <form method="post"
+                          th:action="@{/web/cards/{cardId}/block(cardId=${card.id})}">
+                        <input type="hidden" name="accountId" th:value="${account.id}"/>
+                        <button type="submit" class="btn btn-danger"
+                                style="padding:0.3rem 0.8rem; font-size:0.8rem;">
+                            Blokla
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div th:if="${cards == null or cards.isEmpty()}"
+                 style="color:var(--text-secondary); text-align:center; padding:1rem;">
+                Kart yoxdur
+            </div>
+        </div>
+    </div>
+
+    <!-- Əmanətlər -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <div class="card-title">Əmanətlər</div>
+            <a th:href="@{/web/deposits/new/{id}(id=${account.id})}" class="btn btn-outline">+ Əmanət</a>
+        </div>
+        <table>
+            <thead>
+            <tr>
+                <th>Məbləğ</th><th>Faiz</th><th>Müddət</th>
+                <th>Gözlənilən gəlir</th><th>Bitmə tarixi</th><th>Status</th><th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="deposit : ${deposits}">
+                <td th:text="${deposit.amount} + ' AZN'"></td>
+                <td th:text="${deposit.interestRate} + '%'"></td>
+                <td th:text="${deposit.durationMonths} + ' ay'"></td>
+                <td style="color:var(--accent-green);" th:text="${deposit.expectedProfit} + ' AZN'"></td>
+                <td th:text="${deposit.endDate}"></td>
+                <td><span class="badge"
+                          th:classappend="${deposit.status == 'ACTIVE'} ? 'badge-green' : 'badge-red'"
+                          th:text="${deposit.status}"></span></td>
+                <td>
+                    <form method="post"
+                          th:action="@{/web/deposits/{depositId}/close(depositId=${deposit.id})}">
+                        <input type="hidden" name="accountId" th:value="${account.id}"/>
+                        <button type="submit" class="btn btn-danger"
+                                style="padding:0.3rem 0.8rem; font-size:0.8rem;"
+                                th:disabled="${deposit.status != 'ACTIVE'}">
+                            Bağla
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${deposits == null or deposits.isEmpty()}">
+                <td colspan="7" style="text-align:center; color:var(--text-secondary);">
+                    Əmanət yoxdur
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Əməliyyatlar -->
+    <div class="card">
+        <div class="card-title">Son Əməliyyatlar</div>
+        <table>
+            <thead>
+            <tr>
+                <th>Ref. Nömrə</th><th>Növ</th><th>Məbləğ</th>
+                <th>Valyuta</th><th>Açıqlama</th><th>Tarix</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="tx : ${transactions}">
+                <td style="font-family:monospace; font-size:0.8rem;"
+                    th:text="${tx.referenceNumber}"></td>
+                <td><span class="badge badge-purple" th:text="${tx.transactionType}"></span></td>
+                <td style="font-weight:600;" th:text="${tx.amount}"></td>
+                <td th:text="${tx.currency}"></td>
+                <td style="color:var(--text-secondary);" th:text="${tx.description}"></td>
+                <td style="color:var(--text-secondary); font-size:0.85rem;"
+                    th:text="${#temporals.format(tx.createdAt, 'dd.MM.yyyy HH:mm')}"></td>
+            </tr>
+            <tr th:if="${transactions == null or transactions.content.isEmpty()}">
+                <td colspan="6" style="text-align:center; color:var(--text-secondary);">
+                    Əməliyyat yoxdur
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/footer :: footer}"/>
+</body>
+</html>
