@@ -93,4 +93,22 @@ public class DepositService {
         depositRepository.save(deposit);
         return new ApiResponse<>(true, Messages.UPDATED.name());
     }
+
+    public ApiResponse<List<DepositResponseDto>> getMyDepositsByUser(Long userId) {
+        List<Account> accounts = accountRepository
+                .findByUserIdAndDeletedFalse(userId);
+        List<DepositResponseDto> deposits = accounts.stream()
+                .flatMap(account ->
+                        depositRepository
+                                .findByAccountIdAndDeletedFalse(account.getId())
+                                .stream()
+                )
+                .map(depositMapper::toResponse)
+                .collect(Collectors.toList());
+        return new ApiResponse<>(
+                true,
+                deposits,
+                Messages.SUCCESS.name()
+        );
+    }
 }

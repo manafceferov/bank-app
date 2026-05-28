@@ -7,6 +7,8 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface DepositMapper {
+
     @Mapping(target = "status", expression = "java(deposit.getStatus().name())")
+    @Mapping(target = "accountId", source = "account.id")
     DepositResponseDto toResponse(Deposit deposit);
 }

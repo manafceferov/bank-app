@@ -1,512 +1,603 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head th:fragment="head(title)">
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title th:text="${title} + ' | NeoBank'">NeoBank</title>
+
     <link rel="icon" type="image/png" th:href="@{/favicon.png}"/>
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
         }
 
-        :root {
-            --bg-primary: #0f0f13;
-            --bg-secondary: #1a1a24;
-            --bg-card: #22222f;
-            --bg-hover: #2a2a3a;
-            --accent: #6c63ff;
-            --accent-hover: #5a52e0;
-            --accent-green: #00d4aa;
-            --accent-red: #ff4d6d;
-            --accent-yellow: #ffd166;
-            --text-primary: #f0f0f5;
-            --text-secondary: #9999bb;
-            --border: #2e2e42;
-            --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+        :root{
+            --bg-primary:#0f0f13;
+            --bg-secondary:#1a1a24;
+            --bg-card:#22222f;
+            --bg-hover:#2a2a3a;
+
+            --accent:#6c63ff;
+            --accent-hover:#5a52e0;
+
+            --accent-green:#00d4aa;
+            --accent-red:#ff4d6d;
+            --accent-yellow:#ffd166;
+
+            --text-primary:#f0f0f5;
+            --text-secondary:#9999bb;
+
+            --border:#2e2e42;
+
+            --shadow:0 4px 24px rgba(0,0,0,.4);
         }
 
-        body.light-mode {
-            --bg-primary: #f4f4f8;
-            --bg-secondary: #ffffff;
-            --bg-card: #ffffff;
-            --bg-hover: #ebebf5;
-            --accent: #6c63ff;
-            --accent-hover: #5a52e0;
-            --accent-green: #00a884;
-            --accent-red: #e03355;
-            --accent-yellow: #e6a800;
-            --text-primary: #1a1a2e;
-            --text-secondary: #555577;
-            --border: #dcdce8;
-            --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        body.light-mode{
+            --bg-primary:#f4f4f8;
+            --bg-secondary:#ffffff;
+            --bg-card:#ffffff;
+            --bg-hover:#ebebf5;
+
+            --accent:#6c63ff;
+            --accent-hover:#5a52e0;
+
+            --accent-green:#00a884;
+            --accent-red:#e03355;
+            --accent-yellow:#e6a800;
+
+            --text-primary:#1a1a2e;
+            --text-secondary:#555577;
+
+            --border:#dcdce8;
+
+            --shadow:0 4px 24px rgba(0,0,0,.08);
         }
 
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            transition: background-color 0.3s, color 0.3s;
+        body{
+            font-family:'Segoe UI', sans-serif;
+            background:var(--bg-primary);
+            color:var(--text-primary);
+            min-height:100vh;
+            display:flex;
+            flex-direction:column;
+            transition:.3s;
         }
 
-        main, .container-wrapper {
-            flex: 1;
+        main,
+        .container-wrapper{
+            flex:1;
         }
 
-        nav {
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border);
-            padding: 0 2rem;
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: var(--shadow);
-            transition: background-color 0.3s;
+        nav{
+            background:var(--bg-secondary);
+            border-bottom:1px solid var(--border);
+
+            height:64px;
+
+            padding:0 2rem;
+
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+
+            position:sticky;
+            top:0;
+            z-index:100;
+
+            box-shadow:var(--shadow);
         }
 
-        .nav-brand {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--accent);
-            text-decoration: none;
-            letter-spacing: 1px;
+        .nav-brand{
+            font-size:1.6rem;
+            font-weight:700;
+            color:var(--accent);
+            text-decoration:none;
         }
 
-        .nav-brand span {
-            color: var(--accent-green);
+        .nav-brand span{
+            color:var(--accent-green);
         }
 
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            list-style: none;
+        .nav-links{
+            display:flex;
+            align-items:center;
+            gap:.5rem;
+            list-style:none;
         }
 
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            transition: all 0.2s;
+        .nav-links a{
+            color:var(--text-secondary);
+            text-decoration:none;
+
+            padding:.55rem 1rem;
+
+            border-radius:10px;
+
+            font-size:.92rem;
+            transition:.2s;
         }
 
-        .nav-links a:hover, .nav-links a.active {
-            color: var(--text-primary);
-            background: var(--bg-hover);
+        .nav-links a:hover,
+        .nav-links a.active{
+            background:var(--bg-hover);
+            color:var(--text-primary);
         }
 
-        .nav-user {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+        .nav-user{
+            display:flex;
+            align-items:center;
+            gap:1rem;
         }
 
-        .nav-user span {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
+        .profile-link{
+            color:var(--text-secondary);
+            text-decoration:none;
+
+            font-size:.88rem;
+
+            padding:.45rem .8rem;
+
+            border-radius:8px;
+
+            transition:.2s;
         }
 
-        /* Theme toggle button */
-        .theme-toggle {
-            background: var(--bg-hover);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            width: 38px;
-            height: 38px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            flex-shrink: 0;
+        .profile-link:hover{
+            background:var(--bg-hover);
+            color:var(--text-primary);
         }
 
-        .theme-toggle:hover {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
+        .theme-toggle{
+            width:38px;
+            height:38px;
+
+            border-radius:8px;
+
+            border:1px solid var(--border);
+
+            background:var(--bg-hover);
+            color:var(--text-primary);
+
+            cursor:pointer;
+
+            font-size:1rem;
+
+            display:flex;
+            align-items:center;
+            justify-content:center;
+
+            transition:.2s;
         }
 
-        .btn {
-            padding: 0.5rem 1.2rem;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-block;
+        .theme-toggle:hover{
+            background:var(--accent);
+            border-color:var(--accent);
+            color:#fff;
         }
 
-        .btn-primary {
-            background: var(--accent);
-            color: white;
+        .btn{
+            padding:.5rem 1.2rem;
+
+            border:none;
+            border-radius:8px;
+
+            cursor:pointer;
+
+            font-size:.9rem;
+            font-weight:500;
+
+            text-decoration:none;
+
+            display:inline-block;
+
+            transition:.2s;
         }
 
-        .btn-primary:hover {
-            background: var(--accent-hover);
+        .btn-primary{
+            background:var(--accent);
+            color:#fff;
         }
 
-        .btn-danger {
-            background: transparent;
-            color: var(--accent-red);
-            border: 1px solid var(--accent-red);
+        .btn-primary:hover{
+            background:var(--accent-hover);
         }
 
-        .btn-danger:hover {
-            background: var(--accent-red);
-            color: white;
+        .btn-danger{
+            background:transparent;
+            color:var(--accent-red);
+            border:1px solid var(--accent-red);
         }
 
-        .btn-success {
-            background: var(--accent-green);
-            color: #0f0f13;
+        .btn-danger:hover{
+            background:var(--accent-red);
+            color:#fff;
         }
 
-        .btn-success:hover {
-            opacity: 0.9;
+        .btn-success{
+            background:var(--accent-green);
+            color:#111;
         }
 
-        .btn-outline {
-            background: transparent;
-            color: var(--accent);
-            border: 1px solid var(--accent);
+        .btn-outline{
+            background:transparent;
+            color:var(--accent);
+            border:1px solid var(--accent);
         }
 
-        .btn-outline:hover {
-            background: var(--accent);
-            color: white;
+        .btn-outline:hover{
+            background:var(--accent);
+            color:#fff;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
+        /* BURANI BÖYÜTDÜM */
+        .container{
+            width:100%;
+            max-width:1450px;
+            margin:0 auto;
+            padding:2rem;
         }
 
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-            transition: background-color 0.3s;
+        .card{
+            background:var(--bg-card);
+
+            border:1px solid var(--border);
+            border-radius:14px;
+
+            padding:1.5rem;
+
+            box-shadow:var(--shadow);
         }
 
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--text-primary);
+        .card-title{
+            font-size:1.1rem;
+            font-weight:600;
+            margin-bottom:1rem;
         }
 
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
+        .grid-2{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:1.5rem;
         }
 
-        .grid-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 1.5rem;
+        .grid-3{
+            display:grid;
+            grid-template-columns:repeat(3,1fr);
+            gap:1.5rem;
         }
 
-        .grid-4 {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.5rem;
+        .grid-4{
+            display:grid;
+            grid-template-columns:repeat(4,1fr);
+            gap:1.5rem;
         }
 
-        .form-group {
-            margin-bottom: 1.2rem;
+        .form-group{
+            margin-bottom:1.2rem;
         }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 0.4rem;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
+        .form-group label{
+            display:block;
+            margin-bottom:.45rem;
+            color:var(--text-secondary);
+            font-size:.85rem;
         }
 
         .form-group input,
         .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-size: 0.95rem;
-            transition: border 0.2s, background-color 0.3s;
+        .form-group textarea{
+            width:100%;
+
+            padding:.8rem 1rem;
+
+            background:var(--bg-primary);
+
+            border:1px solid var(--border);
+            border-radius:8px;
+
+            color:var(--text-primary);
+
+            font-size:.95rem;
         }
 
         .form-group input:focus,
         .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--accent);
+        .form-group textarea:focus{
+            outline:none;
+            border-color:var(--accent);
         }
 
-        .alert {
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
+        .alert{
+            padding:.8rem 1rem;
+            border-radius:8px;
+            margin-bottom:1rem;
+            font-size:.9rem;
         }
 
-        .alert-error {
-            background: rgba(255, 77, 109, 0.1);
-            border: 1px solid var(--accent-red);
-            color: var(--accent-red);
+        .alert-error{
+            background:rgba(255,77,109,.1);
+            border:1px solid var(--accent-red);
+            color:var(--accent-red);
         }
 
-        .alert-success {
-            background: rgba(0, 212, 170, 0.1);
-            border: 1px solid var(--accent-green);
-            color: var(--accent-green);
+        .alert-success{
+            background:rgba(0,212,170,.1);
+            border:1px solid var(--accent-green);
+            color:var(--accent-green);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        table{
+            width:100%;
+            border-collapse:collapse;
         }
 
-        table th {
-            text-align: left;
-            padding: 0.75rem 1rem;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 1px solid var(--border);
+        table th{
+            text-align:left;
+
+            padding:.8rem 1rem;
+
+            color:var(--text-secondary);
+
+            font-size:.8rem;
+
+            text-transform:uppercase;
+
+            border-bottom:1px solid var(--border);
         }
 
-        table td {
-            padding: 0.9rem 1rem;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.9rem;
+        table td{
+            padding:1rem;
+            border-bottom:1px solid var(--border);
+            font-size:.92rem;
         }
 
-        table tr:last-child td {
-            border-bottom: none;
+        table tr:last-child td{
+            border-bottom:none;
         }
 
-        table tr:hover td {
-            background: var(--bg-hover);
+        table tr:hover td{
+            background:var(--bg-hover);
         }
 
-        .badge {
-            padding: 0.25rem 0.7rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
+        .badge{
+            padding:.3rem .75rem;
+            border-radius:999px;
+
+            font-size:.74rem;
+            font-weight:700;
         }
 
-        .badge-green {
-            background: rgba(0, 212, 170, 0.15);
-            color: var(--accent-green);
+        .badge-green{
+            background:rgba(0,212,170,.15);
+            color:var(--accent-green);
         }
 
-        .badge-red {
-            background: rgba(255, 77, 109, 0.15);
-            color: var(--accent-red);
+        .badge-red{
+            background:rgba(255,77,109,.15);
+            color:var(--accent-red);
         }
 
-        .badge-yellow {
-            background: rgba(255, 209, 102, 0.15);
-            color: var(--accent-yellow);
+        .badge-yellow{
+            background:rgba(255,209,102,.15);
+            color:var(--accent-yellow);
         }
 
-        .badge-purple {
-            background: rgba(108, 99, 255, 0.15);
-            color: var(--accent);
+        .badge-purple{
+            background:rgba(108,99,255,.15);
+            color:var(--accent);
         }
 
-        .page-title {
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
+        .page-title{
+            font-size:1.8rem;
+            font-weight:700;
+            margin-bottom:1.5rem;
         }
 
-        .stat-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            transition: background-color 0.3s;
+        .stat-card{
+            background:var(--bg-card);
+
+            border:1px solid var(--border);
+            border-radius:14px;
+
+            padding:1.5rem;
         }
 
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.5rem;
+        .stat-label{
+            color:var(--text-secondary);
+            font-size:.8rem;
+            text-transform:uppercase;
+            margin-bottom:.5rem;
         }
 
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-primary);
+        .stat-value{
+            font-size:1.9rem;
+            font-weight:700;
         }
 
-        .stat-value.green {
-            color: var(--accent-green);
+        .stat-value.green{
+            color:var(--accent-green);
         }
 
-        .stat-value.purple {
-            color: var(--accent);
+        .stat-value.purple{
+            color:var(--accent);
         }
 
-        footer {
-            background: var(--bg-secondary);
-            border-top: 1px solid var(--border);
-            padding: 1.5rem 2rem;
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            transition: background-color 0.3s;
-            margin-top: auto;
+        footer{
+            background:var(--bg-secondary);
+
+            border-top:1px solid var(--border);
+
+            padding:1.5rem 2rem;
+
+            color:var(--text-secondary);
+
+            margin-top:auto;
         }
 
-        footer a {
-            color: var(--accent);
-            text-decoration: none;
+        .footer-content{
+            max-width:1450px;
+            margin:0 auto;
+
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
         }
 
-        footer a:hover {
-            text-decoration: underline;
+        footer a{
+            color:var(--accent);
+            text-decoration:none;
         }
 
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        @media(max-width:768px){
 
-        @media (max-width: 768px) {
-            .grid-2, .grid-3, .grid-4 {
-                grid-template-columns: 1fr;
+            .grid-2,
+            .grid-3,
+            .grid-4{
+                grid-template-columns:1fr;
             }
 
-            .nav-links {
-                display: none;
+            .nav-links{
+                display:none;
             }
 
-            .container {
-                padding: 1rem;
+            .container{
+                padding:1rem;
             }
 
-            .footer-content {
-                flex-direction: column;
-                gap: 0.5rem;
+            .footer-content{
+                flex-direction:column;
+                gap:.5rem;
             }
         }
+
     </style>
-
-    <script>
-        // Səhifə yüklənəndə modu tətbiq et
-        (function () {
-            const saved = localStorage.getItem('theme');
-            if (saved === 'light') {
-                document.documentElement.classList.add('light-mode-pending');
-            }
-        })();
-    </script>
 </head>
 
+<body>
+
 <header th:fragment="navbar">
+
     <nav>
-        <a href="/" class="nav-brand">Neo<span>Bank</span></a>
+
+        <a th:href="@{/dashboard}" class="nav-brand">
+            Neo<span>Bank</span>
+        </a>
 
         <ul class="nav-links">
+
             <li sec:authorize="isAuthenticated()">
                 <a th:href="@{/dashboard}"
                    th:classappend="${currentPath == '/dashboard'} ? 'active'">
                     Dashboard
                 </a>
             </li>
+
             <li sec:authorize="isAuthenticated()">
                 <a th:href="@{/web/accounts}"
                    th:classappend="${currentPath != null and currentPath.startsWith('/web/accounts')} ? 'active'">
                     Hesablar
                 </a>
             </li>
+
             <li sec:authorize="isAuthenticated()">
                 <a th:href="@{/web/transactions/transfer}"
                    th:classappend="${currentPath != null and currentPath.startsWith('/web/transactions')} ? 'active'">
                     Transfer
                 </a>
             </li>
+
             <li sec:authorize="isAuthenticated()">
                 <a th:href="@{/web/credits}"
                    th:classappend="${currentPath != null and currentPath.startsWith('/web/credits')} ? 'active'">
                     Kreditlər
                 </a>
             </li>
+
+            <li sec:authorize="isAuthenticated()">
+                <a th:href="@{/web/deposits}"
+                   th:classappend="${currentPath != null and currentPath.startsWith('/web/deposits')} ? 'active'">
+                    Əmanətlər
+                </a>
+            </li>
+
         </ul>
 
         <div class="nav-user">
+
             <a th:href="@{/web/profile}"
                sec:authorize="isAuthenticated()"
-               th:text="${session.firstName} + ' ' + ${session.lastName}"
-               style="color: var(--text-secondary); text-decoration: none; font-size: 0.85rem;
-          padding: 0.4rem 0.8rem; border-radius: 8px; transition: all 0.2s;"
-               onmouseover="this.style.background='var(--bg-hover)'; this.style.color='var(--text-primary)'"
-               onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)'">
+               class="profile-link"
+               th:text="${session.firstName + ' ' + session.lastName}">
             </a>
 
-            <!-- Dark/Light toggle -->
-            <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Modu dəyiş">
+            <button class="theme-toggle"
+                    onclick="toggleTheme()"
+                    id="themeBtn"
+                    title="Modu dəyiş">
                 🌙
             </button>
 
-            <a th:href="@{/logout}" class="btn btn-danger"
-               sec:authorize="isAuthenticated()">Çıxış</a>
-            <a th:href="@{/login}" class="btn btn-primary"
-               sec:authorize="!isAuthenticated()">Giriş</a>
+            <a th:href="@{/logout}"
+               class="btn btn-danger"
+               sec:authorize="isAuthenticated()">
+                Çıxış
+            </a>
+
+            <a th:href="@{/login}"
+               class="btn btn-primary"
+               sec:authorize="!isAuthenticated()">
+                Giriş
+            </a>
+
         </div>
+
     </nav>
 
     <script>
-        // Səhifə yüklənəndə modu tətbiq et
+
         (function () {
-            const saved = localStorage.getItem('theme');
-            const btn = document.getElementById('themeBtn');
-            if (saved === 'light') {
+
+            const savedTheme = localStorage.getItem('theme');
+
+            if (savedTheme === 'light') {
                 document.body.classList.add('light-mode');
-                if (btn) btn.textContent = '☀️';
-            } else {
-                if (btn) btn.textContent = '🌙';
             }
+
+            updateThemeIcon();
+
         })();
 
         function toggleTheme() {
-            const body = document.body;
-            const btn = document.getElementById('themeBtn');
-            const isLight = body.classList.toggle('light-mode');
+
+            document.body.classList.toggle('light-mode');
+
+            const isLight = document.body.classList.contains('light-mode');
+
             localStorage.setItem('theme', isLight ? 'light' : 'dark');
+
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+
+            const btn = document.getElementById('themeBtn');
+
+            if (!btn) return;
+
+            const isLight = document.body.classList.contains('light-mode');
+
             btn.textContent = isLight ? '☀️' : '🌙';
         }
+
     </script>
+
 </header>
+
+</body>
 </html>

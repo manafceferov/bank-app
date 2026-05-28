@@ -5,6 +5,7 @@ import java.time.LocalDate
 
 open class DepositResponseDto @JvmOverloads constructor(
     open var id: Long? = null,
+    open var accountId: Long? = null,
     open var amount: BigDecimal? = null,
     open var interestRate: BigDecimal? = null,
     open var durationMonths: Int? = null,
