@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/header :: head('Profil')}"/>
+</head>
+<body>
+<th:block th:replace="~{fragments/header :: navbar}"/>
+
+<div class="container" style="flex:1;">
+    <div class="page-title">Profilim</div>
+
+    <!-- Yuxarı — avatar + ümumi info -->
+    <div class="card" style="margin-bottom:1.5rem; padding: 2rem;">
+        <div style="display:flex; align-items:center; gap:2rem;">
+            <div style="width:80px; height:80px; border-radius:50%; background:var(--accent);
+                        display:flex; align-items:center; justify-content:center;
+                        font-size:2rem; font-weight:700; color:white; flex-shrink:0;">
+                <span th:text="${user.firstName != null ? user.firstName.substring(0,1).toUpperCase() : 'U'}"></span>
+            </div>
+            <div style="flex:1;">
+                <div style="font-size:1.4rem; font-weight:700; margin-bottom:0.3rem;"
+                     th:text="${user.firstName} + ' ' + ${user.lastName}"></div>
+                <div style="color:var(--text-secondary); margin-bottom:0.5rem;"
+                     th:text="${user.email}"></div>
+                <div style="display:flex; gap:0.5rem;">
+                    <span class="badge badge-purple" th:text="${user.role}"></span>
+                    <span class="badge"
+                          th:classappend="${user.active} ? 'badge-green' : 'badge-red'"
+                          th:text="${user.active} ? 'Aktiv' : 'Deaktiv'"></span>
+                </div>
+            </div>
+            <div style="text-align:right; color:var(--text-secondary); font-size:0.85rem;">
+                <div th:if="${user.phoneNumber != null}">
+                    📞 <span th:text="${user.phoneNumber}"></span>
+                </div>
+                <div th:if="${user.finCode != null}" style="margin-top:0.3rem;">
+                    🪪 <span th:text="${user.finCode}"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aşağı — 2 sütun -->
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+
+        <!-- Şəxsi məlumatlar -->
+        <div class="card">
+            <div class="card-title" style="font-size:1.15rem; padding-bottom:1rem; border-bottom:1px solid var(--border); margin-bottom:1.5rem;">
+                ✏️ Şəxsi Məlumatlar
+            </div>
+
+            <div class="alert alert-success" th:if="${success}" th:text="${success}"></div>
+            <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+
+            <form method="post" th:action="@{/web/profile/edit}">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Ad</label>
+                        <input type="text" name="firstName" th:value="${user.firstName}" required/>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Soyad</label>
+                        <input type="text" name="lastName" th:value="${user.lastName}" required/>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top:1rem;">
+                    <label>Email</label>
+                    <input type="email" th:value="${user.email}" disabled
+                           style="opacity:0.5; cursor:not-allowed;"/>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Telefon</label>
+                        <input type="text" name="phoneNumber" th:value="${user.phoneNumber}"
+                               placeholder="+994501234567"/>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>FİN kod</label>
+                        <input type="text" th:value="${user.finCode}" disabled
+                               style="opacity:0.5; cursor:not-allowed;"/>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary"
+                        style="width:100%; padding:0.85rem; margin-top:1.5rem;">
+                    Yadda saxla
+                </button>
+            </form>
+        </div>
+
+        <!-- Şifrə dəyişdir -->
+        <div class="card">
+            <div class="card-title" style="font-size:1.15rem; padding-bottom:1rem; border-bottom:1px solid var(--border); margin-bottom:1.5rem;">
+                🔒 Şifrə Dəyişdir
+            </div>
+
+            <div class="alert alert-success" th:if="${successPassword}" th:text="${successPassword}"></div>
+            <div class="alert alert-error" th:if="${errorPassword}" th:text="${errorPassword}"></div>
+
+            <form method="post" th:action="@{/web/profile/password}">
+                <div class="form-group">
+                    <label>Mövcud şifrə</label>
+                    <input type="password" name="currentPassword" placeholder="••••••••" required/>
+                </div>
+                <div class="form-group">
+                    <label>Yeni şifrə</label>
+                    <input type="password" name="newPassword" placeholder="••••••••" minlength="6" required/>
+                </div>
+                <button type="submit" class="btn btn-outline"
+                        style="width:100%; padding:0.85rem; margin-top:0.5rem;">
+                    Şifrəni dəyiş
+                </button>
+            </form>
+
+            <!-- Hesab statistikası -->
+            <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+                <div class="stat-label" style="margin-bottom:1.2rem;">📊 Hesab Statistikası</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div style="background:var(--bg-hover); border-radius:10px; padding:1rem; text-align:center;">
+                        <div style="color:var(--text-secondary); font-size:0.75rem; text-transform:uppercase; margin-bottom:0.4rem;">Hesablar</div>
+                        <div style="font-size:1.5rem; font-weight:700; color:var(--accent);"
+                             th:text="${user.id != null ? '—' : '0'}">—</div>
+                    </div>
+                    <div style="background:var(--bg-hover); border-radius:10px; padding:1rem; text-align:center;">
+                        <div style="color:var(--text-secondary); font-size:0.75rem; text-transform:uppercase; margin-bottom:0.4rem;">Status</div>
+                        <div style="margin-top:0.3rem;">
+                            <span class="badge"
+                                  th:classappend="${user.active} ? 'badge-green' : 'badge-red'"
+                                  th:text="${user.active} ? 'Aktiv' : 'Deaktiv'"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/footer :: footer}"/>
+</body>
+</html>

@@ -1,6 +1,7 @@
 package com.neobank.mapper;
 
 import com.neobank.dto.auth.LoginResponseDto;
+import com.neobank.dto.user.UserResponseDto;
 import com.neobank.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,4 +14,7 @@ public interface UserMapper {
     @Mapping(target = "firstName", source = "firstName")
     @Mapping(target = "lastName", source = "lastName")
     LoginResponseDto toLoginResponse(User user);
+
+    @Mapping(target = "role", expression = "java(user.getRole().name())")
+    UserResponseDto toResponseDto(User user);
 }

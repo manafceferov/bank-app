@@ -5,6 +5,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title th:text="${title} + ' | NeoBank'">NeoBank</title>
+    <link rel="icon" type="image/png" th:href="@{/favicon.png}"/>
     <style>
         * {
             margin: 0;
@@ -28,11 +29,34 @@
             --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
         }
 
+        body.light-mode {
+            --bg-primary: #f4f4f8;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-hover: #ebebf5;
+            --accent: #6c63ff;
+            --accent-hover: #5a52e0;
+            --accent-green: #00a884;
+            --accent-red: #e03355;
+            --accent-yellow: #e6a800;
+            --text-primary: #1a1a2e;
+            --text-secondary: #555577;
+            --border: #dcdce8;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        }
+
         body {
             font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        main, .container-wrapper {
+            flex: 1;
         }
 
         nav {
@@ -47,6 +71,7 @@
             top: 0;
             z-index: 100;
             box-shadow: var(--shadow);
+            transition: background-color 0.3s;
         }
 
         .nav-brand {
@@ -91,6 +116,29 @@
         .nav-user span {
             color: var(--text-secondary);
             font-size: 0.85rem;
+        }
+
+        /* Theme toggle button */
+        .theme-toggle {
+            background: var(--bg-hover);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
         }
 
         .btn {
@@ -157,6 +205,7 @@
             border-radius: 12px;
             padding: 1.5rem;
             box-shadow: var(--shadow);
+            transition: background-color 0.3s;
         }
 
         .card-title {
@@ -205,7 +254,7 @@
             border-radius: 8px;
             color: var(--text-primary);
             font-size: 0.95rem;
-            transition: border 0.2s;
+            transition: border 0.2s, background-color 0.3s;
         }
 
         .form-group input:focus,
@@ -301,6 +350,7 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 1.5rem;
+            transition: background-color 0.3s;
         }
 
         .stat-label {
@@ -325,6 +375,34 @@
             color: var(--accent);
         }
 
+        footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            transition: background-color 0.3s;
+            margin-top: auto;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         @media (max-width: 768px) {
             .grid-2, .grid-3, .grid-4 {
                 grid-template-columns: 1fr;
@@ -337,53 +415,98 @@
             .container {
                 padding: 1rem;
             }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
         }
     </style>
+
+    <script>
+        // Səhifə yüklənəndə modu tətbiq et
+        (function () {
+            const saved = localStorage.getItem('theme');
+            if (saved === 'light') {
+                document.documentElement.classList.add('light-mode-pending');
+            }
+        })();
+    </script>
 </head>
 
 <header th:fragment="navbar">
     <nav>
         <a href="/" class="nav-brand">Neo<span>Bank</span></a>
-        <ul class="nav-links">
 
+        <ul class="nav-links">
             <li sec:authorize="isAuthenticated()">
                 <a th:href="@{/dashboard}"
                    th:classappend="${currentPath == '/dashboard'} ? 'active'">
                     Dashboard
                 </a>
             </li>
-
             <li sec:authorize="isAuthenticated()">
                 <a th:href="@{/web/accounts}"
-                   th:classappend="${currentPath.startsWith('/web/accounts')} ? 'active'">
+                   th:classappend="${currentPath != null and currentPath.startsWith('/web/accounts')} ? 'active'">
                     Hesablar
                 </a>
             </li>
-
             <li sec:authorize="isAuthenticated()">
                 <a th:href="@{/web/transactions/transfer}"
-                   th:classappend="${currentPath.startsWith('/web/transactions')} ? 'active'">
+                   th:classappend="${currentPath != null and currentPath.startsWith('/web/transactions')} ? 'active'">
                     Transfer
                 </a>
             </li>
-
             <li sec:authorize="isAuthenticated()">
                 <a th:href="@{/web/credits}"
-                   th:classappend="${currentPath.startsWith('/web/credits')} ? 'active'">
+                   th:classappend="${currentPath != null and currentPath.startsWith('/web/credits')} ? 'active'">
                     Kreditlər
                 </a>
             </li>
-
         </ul>
+
         <div class="nav-user">
-            <span sec:authorize="isAuthenticated()"
-                  th:text="${session.firstName + ' ' + session.lastName}">
-            </span>
+            <a th:href="@{/web/profile}"
+               sec:authorize="isAuthenticated()"
+               th:text="${session.firstName} + ' ' + ${session.lastName}"
+               style="color: var(--text-secondary); text-decoration: none; font-size: 0.85rem;
+          padding: 0.4rem 0.8rem; border-radius: 8px; transition: all 0.2s;"
+               onmouseover="this.style.background='var(--bg-hover)'; this.style.color='var(--text-primary)'"
+               onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)'">
+            </a>
+
+            <!-- Dark/Light toggle -->
+            <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Modu dəyiş">
+                🌙
+            </button>
+
             <a th:href="@{/logout}" class="btn btn-danger"
                sec:authorize="isAuthenticated()">Çıxış</a>
             <a th:href="@{/login}" class="btn btn-primary"
                sec:authorize="!isAuthenticated()">Giriş</a>
         </div>
     </nav>
+
+    <script>
+        // Səhifə yüklənəndə modu tətbiq et
+        (function () {
+            const saved = localStorage.getItem('theme');
+            const btn = document.getElementById('themeBtn');
+            if (saved === 'light') {
+                document.body.classList.add('light-mode');
+                if (btn) btn.textContent = '☀️';
+            } else {
+                if (btn) btn.textContent = '🌙';
+            }
+        })();
+
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.getElementById('themeBtn');
+            const isLight = body.classList.toggle('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            btn.textContent = isLight ? '☀️' : '🌙';
+        }
+    </script>
 </header>
 </html>
