@@ -75,4 +75,14 @@ public class CardService {
         cardRepository.save(card);
         return new ApiResponse<>(true, Messages.UPDATED.name());
     }
+
+    public ApiResponse<List<CardResponseDto>> getMyCardsByUser(Long userId) {
+        List<CardResponseDto> cards = cardRepository
+                .findByAccount_UserIdAndDeletedFalse(userId)
+                .stream()
+                .map(cardMapper::toResponse)
+                .toList();
+
+        return new ApiResponse<>(true, cards, Messages.SUCCESS.name());
+    }
 }

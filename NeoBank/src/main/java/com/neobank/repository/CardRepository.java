@@ -12,4 +12,5 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     Optional<Card> findByIdAndDeletedFalse(Long id);
     boolean existsByCardNumber(String cardNumber);
     Optional<Card> findByCardNumberAndDeletedFalse(String cardNumber);
+    List<Card> findByAccount_UserIdAndDeletedFalse(Long userId);
 }

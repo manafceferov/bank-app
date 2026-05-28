@@ -20,6 +20,23 @@
                          th:text="${account.accountType}"></div>
                     <div style="font-size: 0.85rem; font-family: monospace;" th:text="${account.iban}"></div>
                 </div>
+                <div style="margin-top: 0.8rem;">
+                    <div style="color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 0.3rem;">
+                        Kartlar
+                    </div>
+
+                    <div th:each="card : ${cards}"
+                         th:if="${card.accountId == account.id}"
+                         style="font-family: monospace; font-size: 0.85rem; margin-bottom: 0.2rem;">
+
+                        💳 <span th:text="${card.cardNumber}"></span>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(cards)}"
+                         style="font-size: 0.75rem; color: var(--text-secondary);">
+                        Kart yoxdur
+                    </div>
+                </div>
                 <span class="badge"
                       th:classappend="${account.status == 'ACTIVE'} ? 'badge-green' : 'badge-red'"
                       th:text="${account.status}">

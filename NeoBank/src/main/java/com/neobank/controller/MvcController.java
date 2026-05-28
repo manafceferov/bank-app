@@ -145,6 +145,7 @@ public class MvcController {
         Long userId = (Long) session.getAttribute("userId");
         model.addAttribute("currentPath", request.getRequestURI());
         model.addAttribute("accounts", accountService.getMyAccounts(userId).getData());
+        model.addAttribute("cards", cardService.getMyCardsByUser(userId).getData());
         return "account/list";
     }
 

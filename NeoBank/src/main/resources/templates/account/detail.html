@@ -39,120 +39,170 @@
                 <a th:href="@{/web/cards/request/{id}(id=${account.id})}" class="btn btn-success">Kart sifariş</a>
             </div>
         </div>
-
         <div class="card">
             <div class="card-title">Kartlar</div>
             <div th:each="card : ${cards}"
                  style="margin-bottom: 1rem; padding: 1rem; background: var(--bg-hover); border-radius: 8px;">
-                <div style="font-family: monospace; font-size: 1.1rem; margin-bottom: 0.5rem;"
-                     th:text="${card.cardNumber}"></div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <div style="font-family: monospace; font-size: 1.1rem;" class="number-container">
+                        <span class="masked-number" th:text="'**** **** **** ' + ${#strings.substring(card.cardNumber, #strings.length(card.cardNumber)-4)}"></span>
+                        <span class="full-number" th:text="${card.cardNumber}" style="display:none;"></span>
+                    </div>
+                    <i class="bi bi-eye-fill toggle-card" style="cursor:pointer; font-size: 1rem; color: var(--text-secondary);" onclick="toggleCardVisibility(this)"></i>
+                </div>
+
+                <div style="display: flex; gap: 20px; font-family: monospace; font-size: 1.1rem; color: var(--text-secondary); margin: 10px 0;">
+                    <div>
+                        <span class="expiry-text" th:text="'**/**'"></span>
+                        <span class="full-expiry" th:text="${#temporals.format(card.expiryDate, 'MM/yy')}" style="display:none;"></span>
+                    </div>
+
+                    <div class="cvv-container">
+                        <span class="cvv-text">***</span>
+                        <span class="full-cvv" th:text="${card.cvv}" style="display:none;"></span>
+                    </div>
+                </div>
+
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <span style="color:var(--text-secondary); font-size:0.8rem;"
-                              th:text="${card.cardType}"></span>
-                        <span class="badge" style="margin-left:0.5rem;"
-                              th:classappend="${card.status == 'ACTIVE'} ? 'badge-green' :
-                                             (${card.status == 'PENDING'} ? 'badge-yellow' : 'badge-red')"
-                              th:text="${card.status}"></span>
+                        <span style="color:var(--text-secondary); font-size:0.8rem;" th:text="${card.cardType}"></span>
+                        <span class="badge" th:classappend="${card.status == 'ACTIVE'} ? 'badge-green' : (${card.status == 'PENDING'} ? 'badge-yellow' : 'badge-red')" th:text="${card.status}"></span>
                     </div>
-                    <form method="post"
-                          th:action="@{/web/cards/{cardId}/block(cardId=${card.id})}">
+                    <form method="post" th:action="@{/web/cards/{cardId}/block(cardId=${card.id})}">
                         <input type="hidden" name="accountId" th:value="${account.id}"/>
-                        <button type="submit" class="btn btn-danger"
-                                style="padding:0.3rem 0.8rem; font-size:0.8rem;">
-                            Blokla
-                        </button>
+                        <button type="submit" class="btn btn-danger" style="padding:0.3rem 0.8rem; font-size:0.8rem;">Blokla</button>
                     </form>
                 </div>
             </div>
-            <div th:if="${cards == null or cards.isEmpty()}"
-                 style="color:var(--text-secondary); text-align:center; padding:1rem;">
-                Kart yoxdur
-            </div>
         </div>
-    </div>
-
-    <div class="card" style="margin-bottom: 1.5rem;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-            <div class="card-title">Əmanətlər</div>
-            <a th:href="@{/web/deposits/new/{id}(id=${account.id})}" class="btn btn-outline">+ Əmanət</a>
+        <div th:if="${cards == null or cards.isEmpty()}"
+             style="color:var(--text-secondary); text-align:center; padding:1rem;">
+            Kart yoxdur
         </div>
-        <table>
-            <thead>
-            <tr>
-                <th>Məbləğ</th>
-                <th>Faiz</th>
-                <th>Müddət</th>
-                <th>Gözlənilən gəlir</th>
-                <th>Bitmə tarixi</th>
-                <th>Status</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="deposit : ${deposits}">
-                <td th:text="${deposit.amount} + ' AZN'"></td>
-                <td th:text="${deposit.interestRate} + '%'"></td>
-                <td th:text="${deposit.durationMonths} + ' ay'"></td>
-                <td style="color:var(--accent-green);" th:text="${deposit.expectedProfit} + ' AZN'"></td>
-                <td th:text="${deposit.endDate}"></td>
-                <td><span class="badge"
-                          th:classappend="${deposit.status == 'ACTIVE'} ? 'badge-green' : 'badge-red'"
-                          th:text="${deposit.status}"></span></td>
-                <td>
-                    <form method="post"
-                          th:action="@{/web/deposits/{depositId}/close(depositId=${deposit.id})}">
-                        <input type="hidden" name="accountId" th:value="${account.id}"/>
-                        <button type="submit" class="btn btn-danger"
-                                style="padding:0.3rem 0.8rem; font-size:0.8rem;"
-                                th:disabled="${deposit.status != 'ACTIVE'}">
-                            Bağla
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            <tr th:if="${deposits == null or deposits.isEmpty()}">
-                <td colspan="7" style="text-align:center; color:var(--text-secondary);">
-                    Əmanət yoxdur
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <div class="card">
-        <div class="card-title">Son Əməliyyatlar</div>
-        <table>
-            <thead>
-            <tr>
-                <th>Ref. Nömrə</th>
-                <th>Növ</th>
-                <th>Məbləğ</th>
-                <th>Valyuta</th>
-                <th>Açıqlama</th>
-                <th>Tarix</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="tx : ${transactions}">
-                <td style="font-family:monospace; font-size:0.8rem;"
-                    th:text="${tx.referenceNumber}"></td>
-                <td><span class="badge badge-purple" th:text="${tx.transactionType}"></span></td>
-                <td style="font-weight:600;" th:text="${tx.amount}"></td>
-                <td th:text="${tx.currency}"></td>
-                <td style="color:var(--text-secondary);" th:text="${tx.description}"></td>
-                <td style="color:var(--text-secondary); font-size:0.85rem;"
-                    th:text="${#temporals.format(tx.createdAt, 'dd.MM.yyyy HH:mm')}"></td>
-            </tr>
-            <tr th:if="${transactions == null or transactions.content.isEmpty()}">
-                <td colspan="6" style="text-align:center; color:var(--text-secondary);">
-                    Əməliyyat yoxdur
-                </td>
-            </tr>
-            </tbody>
-        </table>
     </div>
 </div>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <div class="card-title">Əmanətlər</div>
+        <a th:href="@{/web/deposits/new/{id}(id=${account.id})}" class="btn btn-outline">+ Əmanət</a>
+    </div>
+    <table>
+        <thead>
+        <tr>
+            <th>Məbləğ</th>
+            <th>Faiz</th>
+            <th>Müddət</th>
+            <th>Gözlənilən gəlir</th>
+            <th>Bitmə tarixi</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="deposit : ${deposits}">
+            <td th:text="${deposit.amount} + ' AZN'"></td>
+            <td th:text="${deposit.interestRate} + '%'"></td>
+            <td th:text="${deposit.durationMonths} + ' ay'"></td>
+            <td style="color:var(--accent-green);" th:text="${deposit.expectedProfit} + ' AZN'"></td>
+            <td th:text="${deposit.endDate}"></td>
+            <td><span class="badge"
+                      th:classappend="${deposit.status == 'ACTIVE'} ? 'badge-green' : 'badge-red'"
+                      th:text="${deposit.status}"></span></td>
+            <td>
+                <form method="post"
+                      th:action="@{/web/deposits/{depositId}/close(depositId=${deposit.id})}">
+                    <input type="hidden" name="accountId" th:value="${account.id}"/>
+                    <button type="submit" class="btn btn-danger"
+                            style="padding:0.3rem 0.8rem; font-size:0.8rem;"
+                            th:disabled="${deposit.status != 'ACTIVE'}">
+                        Bağla
+                    </button>
+                </form>
+            </td>
+        </tr>
+        <tr th:if="${deposits == null or deposits.isEmpty()}">
+            <td colspan="7" style="text-align:center; color:var(--text-secondary);">
+                Əmanət yoxdur
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <div class="card-title">Son Əməliyyatlar</div>
+    <table>
+        <thead>
+        <tr>
+            <th>Ref. Nömrə</th>
+            <th>Növ</th>
+            <th>Məbləğ</th>
+            <th>Valyuta</th>
+            <th>Açıqlama</th>
+            <th>Tarix</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="tx : ${transactions}">
+            <td style="font-family:monospace; font-size:0.8rem;"
+                th:text="${tx.referenceNumber}"></td>
+            <td><span class="badge badge-purple" th:text="${tx.transactionType}"></span></td>
+            <td style="font-weight:600;" th:text="${tx.amount}"></td>
+            <td th:text="${tx.currency}"></td>
+            <td style="color:var(--text-secondary);" th:text="${tx.description}"></td>
+            <td style="color:var(--text-secondary); font-size:0.85rem;"
+                th:text="${#temporals.format(tx.createdAt, 'dd.MM.yyyy HH:mm')}"></td>
+        </tr>
+        <tr th:if="${transactions == null or transactions.content.isEmpty()}">
+            <td colspan="6" style="text-align:center; color:var(--text-secondary);">
+                Əməliyyat yoxdur
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</div>
+<style>
+    .toggle-card {
+        transition: color 0.2s;
+    }
+
+    .toggle-card:hover {
+        color: var(--accent);
+    }
+</style>
+
+<script>
+    function toggleCardVisibility(icon) {
+        const parentDiv = icon.parentElement.parentElement;
+        const container = parentDiv.querySelector('.number-container');
+        const masked = container.querySelector('.masked-number');
+        const full = container.querySelector('.full-number');
+        const expiryText = parentDiv.querySelector('.expiry-text');
+        const fullExpiry = parentDiv.querySelector('.full-expiry');
+        const cvvText = parentDiv.querySelector('.cvv-text');
+        const fullCvv = parentDiv.querySelector('.full-cvv');
+        if (full.style.display === "none") {
+            let rawNumber = full.textContent.replace(/\s+/g, '');
+            full.textContent = rawNumber.replace(/(.{4})/g, '$1 ').trim();
+            masked.style.display = "none";
+            full.style.display = "inline";
+            expiryText.textContent = fullExpiry.textContent;
+            cvvText.textContent = fullCvv.textContent;
+            icon.classList.remove("bi-eye-fill");
+            icon.classList.add("bi-eye-slash-fill");
+        } else {
+            masked.style.display = "inline";
+            full.style.display = "none";
+            expiryText.textContent = "**/**";
+            cvvText.textContent = "***";
+            icon.classList.remove("bi-eye-slash-fill");
+            icon.classList.add("bi-eye-fill");
+        }
+    }
+</script>
 
 <th:block th:replace="~{fragments/footer :: footer}"/>
 </body>

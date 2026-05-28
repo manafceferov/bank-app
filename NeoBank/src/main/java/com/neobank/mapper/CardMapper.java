@@ -9,6 +9,7 @@ import org.mapstruct.Mapping;
 public interface CardMapper {
     @Mapping(target = "cardType", expression = "java(card.getCardType().name())")
     @Mapping(target = "status", expression = "java(card.getStatus().name())")
-    @Mapping(target = "cardNumber", expression = "java(\"**** **** **** \" + card.getCardNumber().substring(12))")
+    @Mapping(target = "cardNumber", source = "cardNumber")
+    @Mapping(target = "cvv", source = "cvv")
     CardResponseDto toResponse(Card card);
 }
