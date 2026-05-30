@@ -205,6 +205,7 @@ public class MvcController {
         Long userId = (Long) session.getAttribute("userId");
         model.addAttribute("currentPath", request.getRequestURI());
         model.addAttribute("user", userService.getById(userId).getData());
+        model.addAttribute("accounts", accountService.getMyAccounts(userId).getData());
         return "user/profile";
     }
 
@@ -348,6 +349,19 @@ public class MvcController {
             model.addAttribute("accounts", accountService.getMyAccounts(userId).getData());
             return "transaction/transfer";
         }
+    }
+
+    @GetMapping("/web/transactions/{id}")
+    public String transactionDetail(@PathVariable Long id,
+                                    HttpSession session,
+                                    Model model,
+                                    HttpServletRequest request
+    ) {
+        if (session.getAttribute("userId") == null) return "redirect:/login";
+        Long userId = (Long) session.getAttribute("userId");
+        model.addAttribute("currentPath", request.getRequestURI());
+        model.addAttribute("transaction", transactionService.getById(id, userId).getData());
+        return "transaction/detail";
     }
 
     @GetMapping("/web/deposits")

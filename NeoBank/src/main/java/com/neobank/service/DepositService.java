@@ -12,7 +12,6 @@ import com.neobank.repository.AccountRepository;
 import com.neobank.repository.DepositRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -37,8 +36,21 @@ public class DepositService {
         this.depositMapper = depositMapper;
     }
 
+    private BigDecimal getInterestRate(Integer durationMonths) {
+        return switch (durationMonths) {
+            case 3 -> BigDecimal.valueOf(4);
+            case 6 -> BigDecimal.valueOf(8);
+            case 12 -> BigDecimal.valueOf(9.5);
+            case 24 -> BigDecimal.valueOf(10.5);
+            case 36 -> BigDecimal.valueOf(12);
+            default -> throw new RuntimeException("Invalid duration");
+        };
+    }
+
     @Transactional
-    public ApiResponse<DepositResponseDto> create(Long userId, DepositCreateDto dto) {
+    public ApiResponse<DepositResponseDto> create(Long userId,
+                                                  DepositCreateDto dto
+    ) {
         Account account = accountRepository.findByIdAndDeletedFalse(dto.getAccountId())
                 .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
         if (!account.getUser().getId().equals(userId))
@@ -47,25 +59,37 @@ public class DepositService {
             throw new RuntimeException(Messages.INSUFFICIENT_BALANCE.name());
         account.setBalance(account.getBalance().subtract(dto.getAmount()));
         accountRepository.save(account);
-        BigDecimal rate = ANNUAL_RATE.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+        BigDecimal annualRate = getInterestRate(dto.getDurationMonths());
+        BigDecimal rate = annualRate.divide(
+                BigDecimal.valueOf(100),
+                4,
+                RoundingMode.HALF_UP
+        );
         BigDecimal profit = dto.getAmount()
                 .multiply(rate)
                 .multiply(BigDecimal.valueOf(dto.getDurationMonths()))
-                .divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
+                .divide(
+                        BigDecimal.valueOf(12),
+                        2,
+                        RoundingMode.HALF_UP
+                );
         Deposit deposit = new Deposit();
         deposit.setAccount(account);
         deposit.setAmount(dto.getAmount());
-        deposit.setInterestRate(ANNUAL_RATE);
+        deposit.setInterestRate(annualRate);
         deposit.setDurationMonths(dto.getDurationMonths());
         deposit.setStartDate(LocalDate.now());
         deposit.setEndDate(LocalDate.now().plusMonths(dto.getDurationMonths()));
         deposit.setExpectedProfit(profit);
         deposit.setStatus(DepositStatus.ACTIVE);
         depositRepository.save(deposit);
-        return new ApiResponse<>(true, depositMapper.toResponse(deposit), Messages.CREATED.name());
+        return new ApiResponse<>(true, depositMapper.toResponse(deposit), Messages.CREATED.name()
+        );
     }
 
-    public ApiResponse<List<DepositResponseDto>> getMyDeposits(Long accountId, Long userId) {
+    public ApiResponse<List<DepositResponseDto>> getMyDeposits(Long accountId,
+                                                               Long userId
+    ) {
         Account account = accountRepository.findByIdAndDeletedFalse(accountId)
                 .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
         if (!account.getUser().getId().equals(userId))
@@ -79,7 +103,9 @@ public class DepositService {
     }
 
     @Transactional
-    public ApiResponse<Void> close(Long depositId, Long userId) {
+    public ApiResponse<Void> close(Long depositId,
+                                   Long userId
+    ) {
         Deposit deposit = depositRepository.findByIdAndDeletedFalse(depositId)
                 .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
         if (!deposit.getAccount().getUser().getId().equals(userId))

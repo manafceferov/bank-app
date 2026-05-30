@@ -8,8 +8,6 @@
 
 <div class="container" style="flex:1;">
     <div class="page-title">Profilim</div>
-
-    <!-- Yuxarı — avatar + ümumi info -->
     <div class="card" style="margin-bottom:1.5rem; padding: 2rem;">
         <div style="display:flex; align-items:center; gap:2rem;">
             <div style="width:80px; height:80px; border-radius:50%; background:var(--accent);
@@ -39,19 +37,14 @@
             </div>
         </div>
     </div>
-
-    <!-- Aşağı — 2 sütun -->
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
-
-        <!-- Şəxsi məlumatlar -->
         <div class="card">
-            <div class="card-title" style="font-size:1.15rem; padding-bottom:1rem; border-bottom:1px solid var(--border); margin-bottom:1.5rem;">
+            <div class="card-title"
+                 style="font-size:1.15rem; padding-bottom:1rem; border-bottom:1px solid var(--border); margin-bottom:1.5rem;">
                 ✏️ Şəxsi Məlumatlar
             </div>
-
             <div class="alert alert-success" th:if="${success}" th:text="${success}"></div>
             <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
-
             <form method="post" th:action="@{/web/profile/edit}">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
                     <div class="form-group" style="margin-bottom:0;">
@@ -63,13 +56,11 @@
                         <input type="text" name="lastName" th:value="${user.lastName}" required/>
                     </div>
                 </div>
-
                 <div class="form-group" style="margin-top:1rem;">
                     <label>Email</label>
                     <input type="email" th:value="${user.email}" disabled
                            style="opacity:0.5; cursor:not-allowed;"/>
                 </div>
-
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
                     <div class="form-group" style="margin-bottom:0;">
                         <label>Telefon</label>
@@ -82,23 +73,19 @@
                                style="opacity:0.5; cursor:not-allowed;"/>
                     </div>
                 </div>
-
                 <button type="submit" class="btn btn-primary"
                         style="width:100%; padding:0.85rem; margin-top:1.5rem;">
                     Yadda saxla
                 </button>
             </form>
         </div>
-
-        <!-- Şifrə dəyişdir -->
         <div class="card">
-            <div class="card-title" style="font-size:1.15rem; padding-bottom:1rem; border-bottom:1px solid var(--border); margin-bottom:1.5rem;">
+            <div class="card-title"
+                 style="font-size:1.15rem; padding-bottom:1rem; border-bottom:1px solid var(--border); margin-bottom:1.5rem;">
                 🔒 Şifrə Dəyişdir
             </div>
-
             <div class="alert alert-success" th:if="${successPassword}" th:text="${successPassword}"></div>
             <div class="alert alert-error" th:if="${errorPassword}" th:text="${errorPassword}"></div>
-
             <form method="post" th:action="@{/web/profile/password}">
                 <div class="form-group">
                     <label>Mövcud şifrə</label>
@@ -113,18 +100,21 @@
                     Şifrəni dəyiş
                 </button>
             </form>
-
-            <!-- Hesab statistikası -->
             <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
                 <div class="stat-label" style="margin-bottom:1.2rem;">📊 Hesab Statistikası</div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
                     <div style="background:var(--bg-hover); border-radius:10px; padding:1rem; text-align:center;">
-                        <div style="color:var(--text-secondary); font-size:0.75rem; text-transform:uppercase; margin-bottom:0.4rem;">Hesablar</div>
+                        <div style="color:var(--text-secondary); font-size:0.75rem; text-transform:uppercase; margin-bottom:0.4rem;">
+                            Hesablar
+                        </div>
                         <div style="font-size:1.5rem; font-weight:700; color:var(--accent);"
-                             th:text="${user.id != null ? '—' : '0'}">—</div>
+                             th:text="${accounts != null ? accounts.size() : 0}">—
+                        </div>
                     </div>
                     <div style="background:var(--bg-hover); border-radius:10px; padding:1rem; text-align:center;">
-                        <div style="color:var(--text-secondary); font-size:0.75rem; text-transform:uppercase; margin-bottom:0.4rem;">Status</div>
+                        <div style="color:var(--text-secondary); font-size:0.75rem; text-transform:uppercase; margin-bottom:0.4rem;">
+                            Status
+                        </div>
                         <div style="margin-top:0.3rem;">
                             <span class="badge"
                                   th:classappend="${user.active} ? 'badge-green' : 'badge-red'"
@@ -134,7 +124,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 

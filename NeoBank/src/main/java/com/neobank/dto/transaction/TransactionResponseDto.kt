@@ -10,5 +10,7 @@ open class TransactionResponseDto @JvmOverloads constructor(
     open var transactionType: String? = null,
     open var description: String? = null,
     open var referenceNumber: String? = null,
-    open var createdAt: LocalDateTime? = null
-)
+    open var fromAccountIban: String? = null,
+    open var toAccountIban: String? = null,
+    open var createdAt: LocalDateTime? = null,
+    )

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/header :: head('Əməliyyat Detalı')}"/>
+</head>
+<body>
+<th:block th:replace="~{fragments/header :: navbar}"/>
+
+<div class="container" style="flex:1;">
+    <div style="max-width:640px; margin:0 auto;">
+
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem;">
+            <a onclick="history.back()"
+               style="cursor:pointer; color:var(--text-secondary); font-size:1.2rem;">&#8592;</a>
+            <div class="page-title" style="margin-bottom:0;">Əməliyyat Detalı</div>
+        </div>
+
+        <!-- Məbləğ -->
+        <div class="card" style="text-align:center; padding:2.5rem; margin-bottom:1.5rem;">
+            <div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:1px;"
+                 th:text="${transaction.transactionType}"></div>
+            <div style="font-size:3rem; font-weight:800; color:var(--accent-green); margin-bottom:1rem;"
+                 th:text="${transaction.amount} + ' ' + ${transaction.currency}"></div>
+            <span class="badge badge-purple" th:text="${transaction.transactionType}"></span>
+        </div>
+
+        <!-- Detallar -->
+        <div class="card" style="margin-bottom:1.5rem;">
+            <div class="card-title">Əməliyyat Məlumatları</div>
+            <table>
+                <tr>
+                    <td style="color:var(--text-secondary); padding:0.9rem 0; width:40%;">Referans nömrə</td>
+                    <td style="font-family:monospace; font-size:0.85rem;"
+                        th:text="${transaction.referenceNumber}"></td>
+                </tr>
+                <tr>
+                    <td style="color:var(--text-secondary); padding:0.9rem 0;">Tarix</td>
+                    <td th:text="${#temporals.format(transaction.createdAt, 'dd.MM.yyyy HH:mm:ss')}"></td>
+                </tr>
+                <tr>
+                    <td style="color:var(--text-secondary); padding:0.9rem 0;">Valyuta</td>
+                    <td th:text="${transaction.currency}"></td>
+                </tr>
+                <tr th:if="${transaction.description != null and !transaction.description.isEmpty()}">
+                    <td style="color:var(--text-secondary); padding:0.9rem 0;">Açıqlama</td>
+                    <td th:text="${transaction.description}"></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Göndərən / Alan -->
+        <div class="grid-2" style="margin-bottom:1.5rem;">
+            <div class="card">
+                <div style="color:var(--text-secondary); font-size:0.8rem; text-transform:uppercase;
+                            letter-spacing:0.5px; margin-bottom:0.75rem;">Göndərən</div>
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <div style="width:40px; height:40px; border-radius:50%; background:var(--accent-red);
+                                display:flex; align-items:center; justify-content:center;
+                                font-size:1.2rem; flex-shrink:0;">↑</div>
+                    <div>
+                        <div style="font-family:monospace; font-size:0.85rem; word-break:break-all;"
+                             th:text="${transaction.fromAccountIban != null ? transaction.fromAccountIban : '—'}"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div style="color:var(--text-secondary); font-size:0.8rem; text-transform:uppercase;
+                            letter-spacing:0.5px; margin-bottom:0.75rem;">Alan</div>
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <div style="width:40px; height:40px; border-radius:50%; background:var(--accent-green);
+                                display:flex; align-items:center; justify-content:center;
+                                font-size:1.2rem; flex-shrink:0;">↓</div>
+                    <div>
+                        <div style="font-family:monospace; font-size:0.85rem; word-break:break-all;"
+                             th:text="${transaction.toAccountIban != null ? transaction.toAccountIban : '—'}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a onclick="history.back()"
+           class="btn btn-outline"
+           style="width:100%; text-align:center; cursor:pointer;">
+            ← Geri qayıt
+        </a>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/footer :: footer}"/>
+</body>
+</html>

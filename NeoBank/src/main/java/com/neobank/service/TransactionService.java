@@ -16,7 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.UUID;
 
 @Service
@@ -90,5 +89,19 @@ public class TransactionService {
                 .findAllByAccountId(accountId, pageable)
                 .map(transactionMapper::toResponse);
         return new ApiResponse<>(true, page, Messages.SUCCESS.name());
+    }
+
+    public ApiResponse<TransactionResponseDto> getById(Long id,
+                                                       Long userId
+    ) {
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
+        boolean isFrom = transaction.getFromAccount() != null &&
+                transaction.getFromAccount().getUser().getId().equals(userId);
+        boolean isTo = transaction.getToAccount() != null &&
+                transaction.getToAccount().getUser().getId().equals(userId);
+        if (!isFrom && !isTo)
+            throw new RuntimeException(Messages.FORBIDDEN.name());
+        return new ApiResponse<>(true, transactionMapper.toResponse(transaction), Messages.SUCCESS.name());
     }
 }
