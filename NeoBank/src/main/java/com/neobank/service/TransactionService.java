@@ -16,6 +16,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
@@ -37,34 +39,42 @@ public class TransactionService {
         this.cardRepository = cardRepository;
     }
 
-    @Transactional
-    public ApiResponse<TransactionResponseDto> transfer(Long userId,
-                                                        TransferRequestDto dto
-    ) {
+    private Account resolveAndValidateSender(Long userId, TransferRequestDto dto) {
         Account from = accountRepository.findByIdAndDeletedFalse(dto.getFromAccountId())
                 .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
-        if (!from.getUser().getId().equals(userId)) {
+        if (!from.getUser().getId().equals(userId))
             throw new RuntimeException(Messages.FORBIDDEN.name());
-        }
-        if (from.getStatus() == AccountStatus.BLOCKED) {
+        if (from.getStatus() == AccountStatus.BLOCKED)
             throw new RuntimeException(Messages.ACCOUNT_BLOCKED.name());
-        }
-        if (from.getBalance().compareTo(dto.getAmount()) < 0) {
+        if (from.getBalance().compareTo(dto.getAmount()) < 0)
             throw new RuntimeException(Messages.INSUFFICIENT_BALANCE.name());
-        }
-        Account to;
+        return from;
+    }
+
+    private Account resolveRecipient(TransferRequestDto dto) {
         if (dto.getToCardNumber() != null && !dto.getToCardNumber().isEmpty()) {
-            to = cardRepository.findByCardNumberAndDeletedFalse(dto.getToCardNumber())
+            return cardRepository.findByCardNumberAndDeletedFalse(dto.getToCardNumber())
                     .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()))
                     .getAccount();
-        } else {
-            to = accountRepository.findByIbanAndDeletedFalse(dto.getToIban())
-                    .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
         }
-        from.setBalance(from.getBalance().subtract(dto.getAmount()));
-        to.setBalance(to.getBalance().add(dto.getAmount()));
+        return accountRepository.findByIbanAndDeletedFalse(dto.getToIban())
+                .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
+    }
+
+    private void executeTransfer(Account from,
+                                 Account to,
+                                 BigDecimal amount
+    ) {
+        from.setBalance(from.getBalance().subtract(amount));
+        to.setBalance(to.getBalance().add(amount));
         accountRepository.save(from);
         accountRepository.save(to);
+    }
+
+    private Transaction buildTransaction(Account from,
+                                         Account to,
+                                         TransferRequestDto dto
+    ) {
         Transaction transaction = new Transaction();
         transaction.setFromAccount(from);
         transaction.setToAccount(to);
@@ -73,6 +83,17 @@ public class TransactionService {
         transaction.setTransactionType(TransactionType.TRANSFER);
         transaction.setDescription(dto.getDescription());
         transaction.setReferenceNumber(UUID.randomUUID().toString());
+        return transaction;
+    }
+
+    @Transactional
+    public ApiResponse<TransactionResponseDto> transfer(Long userId,
+                                                        TransferRequestDto dto
+    ) {
+        Account from = resolveAndValidateSender(userId, dto);
+        Account to = resolveRecipient(dto);
+        executeTransfer(from, to, dto.getAmount());
+        Transaction transaction = buildTransaction(from, to, dto);
         transactionRepository.save(transaction);
         return new ApiResponse<>(true, transactionMapper.toResponse(transaction), Messages.SUCCESS.name());
     }

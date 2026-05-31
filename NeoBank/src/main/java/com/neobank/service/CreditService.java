@@ -44,7 +44,9 @@ public class CreditService {
         this.creditMapper = creditMapper;
     }
 
-    public ApiResponse<List<CreditResponseDto>> getCreditsByAccount(Long accountId, Long userId) {
+    public ApiResponse<List<CreditResponseDto>> getCreditsByAccount(Long accountId,
+                                                                    Long userId
+    ) {
         Account account = accountRepository.findByIdAndDeletedFalse(accountId)
                 .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
         if (!account.getUser().getId().equals(userId)) {
@@ -58,35 +60,55 @@ public class CreditService {
         return new ApiResponse<>(true, list, Messages.SUCCESS.name());
     }
 
-    @Transactional
-    public ApiResponse<CreditResponseDto> apply(Long userId, CreditApplyDto dto) {
-        User user = userRepository.findByIdAndDeletedFalse(userId)
+    private Account resolveAccount(Long accountId) {
+        return accountRepository.findByIdAndDeletedFalse(accountId)
                 .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
-        Account account = accountRepository.findByIdAndDeletedFalse(dto.getAccountId())
-                .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
-        if (!account.getUser().getId().equals(userId))
+    }
+
+    private void validateOwnership(Account account,
+                                   Long userId)
+    {
+        if (!account.getUser().getId().equals(userId)) {
             throw new RuntimeException(Messages.FORBIDDEN.name());
-        int n = dto.getDurationMonths();
+        }
+    }
+
+    private BigDecimal calculateMonthlyPayment(BigDecimal amount,
+                                               int months
+    ) {
         BigDecimal monthlyRate = ANNUAL_RATE
                 .divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP)
                 .divide(BigDecimal.valueOf(12), 6, RoundingMode.HALF_UP);
-        BigDecimal pow = BigDecimal.ONE.add(monthlyRate).pow(n);
-        BigDecimal monthly = dto.getAmount()
-                .multiply(monthlyRate)
+        BigDecimal pow = BigDecimal.ONE.add(monthlyRate).pow(months);
+        return amount.multiply(monthlyRate)
                 .multiply(pow)
                 .divide(pow.subtract(BigDecimal.ONE), 2, RoundingMode.HALF_UP);
+    }
+
+    private Credit buildCredit(User user,
+                               Account account,
+                               CreditApplyDto dto,
+                               BigDecimal monthly
+    ) {
         Credit credit = new Credit();
         credit.setUser(user);
         credit.setAccount(account);
         credit.setAmount(dto.getAmount());
         credit.setInterestRate(ANNUAL_RATE);
-        credit.setDurationMonths(n);
+        credit.setDurationMonths(dto.getDurationMonths());
         credit.setMonthlyPayment(monthly);
         credit.setStartDate(LocalDate.now());
-        credit.setEndDate(LocalDate.now().plusMonths(n));
+        credit.setEndDate(LocalDate.now().plusMonths(dto.getDurationMonths()));
         credit.setStatus(CreditStatus.PENDING);
+        return credit;
+    }
+
+    private List<CreditPayment> buildSchedule(Credit credit,
+                                              int months,
+                                              BigDecimal monthly
+    ) {
         List<CreditPayment> schedule = new ArrayList<>();
-        for (int i = 1; i <= n; i++) {
+        for (int i = 1; i <= months; i++) {
             CreditPayment payment = new CreditPayment();
             payment.setCredit(credit);
             payment.setDueDate(LocalDate.now().plusMonths(i));
@@ -94,7 +116,20 @@ public class CreditService {
             payment.setPaid(false);
             schedule.add(payment);
         }
-        credit.setPaymentSchedule(schedule);
+        return schedule;
+    }
+
+    @Transactional
+    public ApiResponse<CreditResponseDto> apply(Long userId,
+                                                CreditApplyDto dto
+    ) {
+        User user = userRepository.findByIdAndDeletedFalse(userId)
+                .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
+        Account account = resolveAccount(dto.getAccountId());
+        validateOwnership(account, userId);
+        BigDecimal monthly = calculateMonthlyPayment(dto.getAmount(), dto.getDurationMonths());
+        Credit credit = buildCredit(user, account, dto, monthly);
+        credit.setPaymentSchedule(buildSchedule(credit, dto.getDurationMonths(), monthly));
         creditRepository.save(credit);
         return new ApiResponse<>(true, creditMapper.toResponse(credit), Messages.CREATED.name());
     }

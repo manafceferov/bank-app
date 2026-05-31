@@ -47,32 +47,46 @@ public class DepositService {
         };
     }
 
-    @Transactional
-    public ApiResponse<DepositResponseDto> create(Long userId,
-                                                  DepositCreateDto dto
-    ) {
-        Account account = accountRepository.findByIdAndDeletedFalse(dto.getAccountId())
+    private Account resolveAccount(Long accountId) {
+        return accountRepository.findByIdAndDeletedFalse(accountId)
                 .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
+    }
+
+    private void validateOwnership(Account account, Long userId) {
         if (!account.getUser().getId().equals(userId))
             throw new RuntimeException(Messages.FORBIDDEN.name());
-        if (account.getBalance().compareTo(dto.getAmount()) < 0)
+    }
+
+    private void validateSufficientBalance(Account account,
+                                           BigDecimal amount
+    ) {
+        if (account.getBalance().compareTo(amount) < 0)
             throw new RuntimeException(Messages.INSUFFICIENT_BALANCE.name());
-        account.setBalance(account.getBalance().subtract(dto.getAmount()));
+    }
+
+    private void deductBalance(Account account,
+                               BigDecimal amount
+    ) {
+        account.setBalance(account.getBalance().subtract(amount));
         accountRepository.save(account);
-        BigDecimal annualRate = getInterestRate(dto.getDurationMonths());
-        BigDecimal rate = annualRate.divide(
-                BigDecimal.valueOf(100),
-                4,
-                RoundingMode.HALF_UP
-        );
-        BigDecimal profit = dto.getAmount()
+    }
+
+    private BigDecimal calculateProfit(BigDecimal amount,
+                                       BigDecimal annualRate,
+                                       int months
+    ) {
+        BigDecimal rate = annualRate.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+        return amount
                 .multiply(rate)
-                .multiply(BigDecimal.valueOf(dto.getDurationMonths()))
-                .divide(
-                        BigDecimal.valueOf(12),
-                        2,
-                        RoundingMode.HALF_UP
-                );
+                .multiply(BigDecimal.valueOf(months))
+                .divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
+    }
+
+    private Deposit buildDeposit(Account account,
+                                 DepositCreateDto dto,
+                                 BigDecimal annualRate,
+                                 BigDecimal profit
+    ) {
         Deposit deposit = new Deposit();
         deposit.setAccount(account);
         deposit.setAmount(dto.getAmount());
@@ -82,9 +96,22 @@ public class DepositService {
         deposit.setEndDate(LocalDate.now().plusMonths(dto.getDurationMonths()));
         deposit.setExpectedProfit(profit);
         deposit.setStatus(DepositStatus.ACTIVE);
+        return deposit;
+    }
+
+    @Transactional
+    public ApiResponse<DepositResponseDto> create(Long userId,
+                                                  DepositCreateDto dto
+    ) {
+        Account account = resolveAccount(dto.getAccountId());
+        validateOwnership(account, userId);
+        validateSufficientBalance(account, dto.getAmount());
+        deductBalance(account, dto.getAmount());
+        BigDecimal annualRate = getInterestRate(dto.getDurationMonths());
+        BigDecimal profit = calculateProfit(dto.getAmount(), annualRate, dto.getDurationMonths());
+        Deposit deposit = buildDeposit(account, dto, annualRate, profit);
         depositRepository.save(deposit);
-        return new ApiResponse<>(true, depositMapper.toResponse(deposit), Messages.CREATED.name()
-        );
+        return new ApiResponse<>(true, depositMapper.toResponse(deposit), Messages.CREATED.name());
     }
 
     public ApiResponse<List<DepositResponseDto>> getMyDeposits(Long accountId,
@@ -102,19 +129,28 @@ public class DepositService {
         return new ApiResponse<>(true, list, Messages.SUCCESS.name());
     }
 
+    private void validateDepositActive(Deposit deposit) {
+        if (deposit.getStatus() != DepositStatus.ACTIVE)
+            throw new RuntimeException(Messages.DEPOSIT_ALREADY_CLOSED.name());
+    }
+
+    private void returnFundsToAccount(Deposit deposit) {
+        Account account = deposit.getAccount();
+        account.setBalance(account.getBalance()
+                .add(deposit.getAmount())
+                .add(deposit.getExpectedProfit()));
+        accountRepository.save(account);
+    }
+
     @Transactional
     public ApiResponse<Void> close(Long depositId,
                                    Long userId
     ) {
         Deposit deposit = depositRepository.findByIdAndDeletedFalse(depositId)
                 .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
-        if (!deposit.getAccount().getUser().getId().equals(userId))
-            throw new RuntimeException(Messages.FORBIDDEN.name());
-        if (deposit.getStatus() != DepositStatus.ACTIVE)
-            throw new RuntimeException(Messages.DEPOSIT_ALREADY_CLOSED.name());
-        Account account = deposit.getAccount();
-        account.setBalance(account.getBalance().add(deposit.getAmount()).add(deposit.getExpectedProfit()));
-        accountRepository.save(account);
+        validateOwnership(deposit.getAccount(), userId);
+        validateDepositActive(deposit);
+        returnFundsToAccount(deposit);
         deposit.setStatus(DepositStatus.CLOSED);
         depositRepository.save(deposit);
         return new ApiResponse<>(true, Messages.UPDATED.name());
