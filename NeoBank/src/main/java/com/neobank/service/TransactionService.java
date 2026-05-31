@@ -39,7 +39,9 @@ public class TransactionService {
         this.cardRepository = cardRepository;
     }
 
-    private Account resolveAndValidateSender(Long userId, TransferRequestDto dto) {
+    private Account resolveAndValidateSender(Long userId,
+                                             TransferRequestDto dto
+    ) {
         Account from = accountRepository.findByIdAndDeletedFalse(dto.getFromAccountId())
                 .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
         if (!from.getUser().getId().equals(userId))

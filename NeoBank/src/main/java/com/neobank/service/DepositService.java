@@ -12,6 +12,7 @@ import com.neobank.repository.AccountRepository;
 import com.neobank.repository.DepositRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -52,7 +53,9 @@ public class DepositService {
                 .orElseThrow(() -> new RuntimeException(Messages.NOT_FOUND.name()));
     }
 
-    private void validateOwnership(Account account, Long userId) {
+    private void validateOwnership(Account account,
+                                   Long userId
+    ) {
         if (!account.getUser().getId().equals(userId))
             throw new RuntimeException(Messages.FORBIDDEN.name());
     }
